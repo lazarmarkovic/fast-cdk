@@ -1,0 +1,51 @@
+// External imports
+import * as cdk from 'aws-cdk-lib';
+import { RemovalPolicy } from 'aws-cdk-lib';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as iam from 'aws-cdk-lib/aws-iam';
+
+// Config import
+import { EnvConfig } from "../../config/configSchema";
+import { PrefixModel } from "../../mics/prefixModel";
+
+
+export class {{data.idPrefix}}{{data.classPrefix}}FrontendS3Bucket {
+  public readonly frontendBucket: s3.Bucket;
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+    prefix: PrefixModel,
+  ) {
+    this.frontendBucket = new s3.Bucket(mainStack, "{{data.idPrefix}}S3Bucket", {
+      bucketName: envConfig.BuildParams.SimpleCloudFrontFrontend.S3BucketName,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      publicReadAccess: true,
+      blockPublicAccess: new s3.BlockPublicAccess({
+        blockPublicPolicy: false,
+        blockPublicAcls: false,
+        ignorePublicAcls: false,
+        restrictPublicBuckets: false
+      }),
+      websiteIndexDocument: "index.html",
+      websiteErrorDocument: "index.html",
+    });
+
+    const policyStatement = new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['s3:GetObject'],
+      resources: [`${this.frontendBucket.bucketArn}/*`],
+      principals: [new iam.AnyPrincipal()],
+    });
+    policyStatement.addCondition(
+      "StringEquals",
+      { "aws:UserAgent": envConfig.BuildParams.SimpleCloudFrontFrontend.CloudFrontConnectionSecret }
+    );
+    this.frontendBucket.addToResourcePolicy(policyStatement);
+
+
+    // Tag resources
+    cdk.Tags.of(this.frontendBucket).add("Name", "{{data.namePrefix}}.s3-bucket");
+  }
+}

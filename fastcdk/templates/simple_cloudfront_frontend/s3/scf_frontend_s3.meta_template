@@ -1,0 +1,11 @@
+name < SCF S3 Bucket
+template file < s3_scf.template
+
+env
+  BuildParams.SimpleCloudFrontFrontend.S3BucketName < scf-bucket
+  BuildParams.SimpleCloudFrontFrontend.CloudFrontConnectionSecret < my-secret-string
+
+input
+  idPrefix < Scf
+  namePrefix < scf
+  classPrefix < null

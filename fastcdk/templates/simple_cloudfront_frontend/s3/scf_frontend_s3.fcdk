@@ -1,0 +1,12 @@
+My Simple Climbing App
+  stack name < MySimpleClimbingApp
+  project name < simple-climbing
+  use blue green env
+
+  My Climbing App Project
+    name prefix < climbing-frontend
+    id prefix < CB
+
+    SCF S3 Bucket
+      # nothing more
+      

@@ -1,0 +1,12 @@
+My Simple Climbing App
+  stack name < MySimpleClimbingApp
+  project name < simple-climbing
+  use blue green env
+
+  My Climbing App Project
+    name prefix < climbing-backend
+    id prefix < CB
+
+    Simple Network With NAT
+      enumExample < T3
+      # When we don't set any param, default values are being used

@@ -1,0 +1,10 @@
+name < Hosted Zone
+template file < hosted_zone.template
+
+env
+  BuildParams.Root.BaseDomainName < some:ARN:of:AWS
+
+input
+  idPrefix < Scf
+  namePrefix < scf
+  classPrefix < null

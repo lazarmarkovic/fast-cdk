@@ -1,0 +1,27 @@
+// External imports
+import * as cdk from "aws-cdk-lib";
+import * as r53 from "aws-cdk-lib/aws-route53";
+
+// Config imports
+import { EnvConfig } from "../../config/configSchema";
+import { PrefixModel } from "../../mics/prefixModel";
+
+
+export class {{data.idPrefix}}{{data.classPrefix}}HostedZoneRoot {
+  public readonly appHostedZone: r53.IHostedZone;
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+    prefix: PrefixModel,
+  ) {
+    this.appHostedZone = r53.HostedZone.fromLookup(
+      mainStack,
+      "{{data.idPrefix}}HostedZone",
+      { domainName: envConfig.BuildParams.Root.BaseDomainName }
+    );
+
+    // Tag resources
+    cdk.Tags.of(this.appHostedZone).add("Name", "{{data.namePrefix}}.hosting-zone");
+  }
+}

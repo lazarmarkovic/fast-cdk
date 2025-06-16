@@ -1,0 +1,104 @@
+// External imports
+import * as cdk from "aws-cdk-lib";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
+
+// Config imports
+import { EnvConfig } from "../../config/configSchema";
+import { PrefixModel } from "../../mics/prefixModel";
+
+
+export class {{data.idPrefix}}{{data.classPrefix}}Network {
+  public readonly vpc: ec2.Vpc;
+  {% if data.addPublicSubnet %}
+  public readonly publicVpcSubnetsSelection: ec2.SubnetSelection;
+  public readonly publicSubnets: ec2.ISubnet[];
+  {% endif %}
+  {% if data.addPrivateWithEgressSubnet %}
+  public readonly privateWithEgressVpcSubnetsSelection: ec2.SubnetSelection;
+  public readonly privateWithEgressSubnets: ec2.ISubnet[];
+  {% endif %}
+  {% if data.addPrivateIsolatedSubnet %}
+  public readonly privateIsolatedVpcSubnetsSelection: ec2.SubnetSelection;
+  public readonly privateIsolatedSubnets: ec2.ISubnet[];
+  {% endif %}
+  
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+    prefix: PrefixModel,
+  ) {
+    this.vpc = new ec2.Vpc(mainStack, "{{data.idPrefix}}VPC", {
+      vpcName: "{{data.namePrefix}}.vpc",
+      ipAddresses: ec2.IpAddresses.cidr(envConfig.BuildParams.Root.VpcCidr),
+      maxAzs: {{ data.maxAzs | int }},
+      natGateways: {{ data.natGateways | int }},
+      enableDnsSupport: {{ data.enableDnsSupport | lower }},
+      enableDnsHostnames: {{ data.enableDnsHostnames | lower }},
+      subnetConfiguration: [
+        {% if data.addPublicSubnet %}
+        {
+          name: "{{data.namePrefix}}.vpc.public.subnet",
+          subnetType: ec2.SubnetType.PUBLIC,
+        },
+        {% endif %}
+        {% if data.addPrivateWithEgressSubnet %}
+        {
+          name: "{{data.namePrefix}}.vpc.private-with-nat.subnet",
+          subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
+        },
+        {% endif %}
+        {% if data.addPrivateIsolatedSubnet %}
+        {
+          name: "{{data.namePrefix}}.vpc.private-isolated.subnet",
+          subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
+        },
+        {% endif %}
+      ]
+    });
+
+    {% if data.addPublicSubnet %}
+    this.publicVpcSubnetsSelection = this.vpc.selectSubnets({ subnetType: ec2.SubnetType.PUBLIC });
+    this.publicSubnets = this.publicVpcSubnetsSelection.subnets || [];
+    {% endif %}
+
+    {% if data.addPrivateWithEgressSubnet %}
+    this.privateWithEgressVpcSubnetsSelection = this.vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS });
+    this.privateWithEgressSubnets = this.privateWithEgressVpcSubnetsSelection.subnets || [];
+    {% endif %}
+
+    {% if data.addPrivateIsolatedSubnet %}
+    this.privateIsolatedVpcSubnetsSelection = this.vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_ISOLATED });
+    this.privateIsolatedSubnets = this.privateWithEgressVpcSubnetsSelection.subnets || [];
+    {% endif %}
+
+    {% if data.addS3Endpoint %}
+    this.vpc.addGatewayEndpoint("{{data.idPrefix}}S3Endpoint", {
+      service: ec2.GatewayVpcEndpointAwsService.S3,
+      subnets: [this.publicVpcSubnetsSelection, this.privateWithEgressVpcSubnetsSelection],
+    });
+    {% endif %}
+
+   
+    // Resource tagging section
+    cdk.Tags.of(this.vpc).add("Name", "{{data.namePrefix}}.vpc");
+
+    {% if data.addPublicSubnet %}
+    for (const subnet of this.publicSubnets) {
+      cdk.Tags.of(subnet).add("Name", "{{data.namePrefix}}.vpc.public.subnet-${subnet.availabilityZone.slice(-1)}");
+    }
+    {% endif %}
+
+    {% if data.addPrivateWithEgressSubnet %}
+    for (const subnet of this.privateWithEgressSubnets) {
+      cdk.Tags.of(subnet).add("Name", "{{data.namePrefix}}.vpc.private-with-nat.subnet-${subnet.availabilityZone.slice(-1)}");
+    }
+    {% endif %}
+
+    {% if data.addPrivateIsolatedSubnet %}
+    for (const subnet of this.privateIsolatedSubnets) {
+      cdk.Tags.of(subnet).add("Name", "{{data.namePrefix}}.vpc.private-isolated.subnet-${subnet.availabilityZone.slice(-1)}");
+    }
+    {% endif %}
+  }
+}
