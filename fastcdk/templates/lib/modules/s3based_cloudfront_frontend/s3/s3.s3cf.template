@@ -9,7 +9,7 @@ import { EnvConfig } from "../../config/configSchema";
 import { PrefixModel } from "../../mics/prefixModel";
 
 
-export class {{data.idPrefix}}{{data.classPrefix}}FrontendS3Bucket {
+export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
   public readonly frontendBucket: s3.Bucket;
 
   constructor(
@@ -18,7 +18,7 @@ export class {{data.idPrefix}}{{data.classPrefix}}FrontendS3Bucket {
     prefix: PrefixModel,
   ) {
     this.frontendBucket = new s3.Bucket(mainStack, "{{data.idPrefix}}S3Bucket", {
-      bucketName: envConfig.BuildParams.SimpleCloudFrontFrontend.S3BucketName,
+      bucketName: envConfig.{{data.s3BucketNameEnvVar}},
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       publicReadAccess: true,
@@ -40,7 +40,7 @@ export class {{data.idPrefix}}{{data.classPrefix}}FrontendS3Bucket {
     });
     policyStatement.addCondition(
       "StringEquals",
-      { "aws:UserAgent": envConfig.BuildParams.SimpleCloudFrontFrontend.CloudFrontConnectionSecret }
+      { "aws:UserAgent": envConfig.{{data.cloudFrontConnectionSecretEnvVar}} }
     );
     this.frontendBucket.addToResourcePolicy(policyStatement);
 

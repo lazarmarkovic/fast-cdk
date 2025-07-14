@@ -11,14 +11,12 @@ import { PrefixModel } from "../../mics/prefixModel";
 import { DeploymentEnvEnum } from "../../mics/deploymentEnvEnum";
 
 // Root imports
-import { HostedZoneRoot } from "../root/hostedZone.root";
+import { {{data.hosted_zone.class}} } from "../{{data.hosted_zone.place}}";
 
 // Local imports
-import { ScfS3 } from "./scfS3.scf";
-import { SebAlb } from "../simple-ecs-backend/alb.seb";
+import { {{data.s3_bucket_for_cloudfront.class}} } from "../{{data.s3_bucket_for_cloudfront.place}}";
 
-
-export class {{data.idPrefix}}{{data.classPrefix}}CloudFront {
+export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
   private readonly deploymentEnv: string;
   public readonly cfDist: cf.Distribution;
   public readonly dnsRecord: r53.RecordSet;
@@ -29,26 +27,25 @@ export class {{data.idPrefix}}{{data.classPrefix}}CloudFront {
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
     prefix: PrefixModel,
-    hostedZoneRoot: HostedZoneRoot,
-    sebAlb: SebAlb,
-    scfS3: ScfS3,
+    hostedZone: {{data.hosted_zone.class}},
+    s3: {{data.s3_bucket_for_cloudfront.class}},
   ) {
-    let mainDomainNames = [envConfig.BuildParams.Root.DomainName];
+    let mainDomainNames = [envConfig.{{data.domainNameEnvVar}}];
     if (envConfig.Environment === DeploymentEnvEnum.BLUE_PROD) {
-      mainDomainNames = [envConfig.BuildParams.Root.DomainName, `www.${envConfig.BuildParams.Root.DomainName}`]
+      mainDomainNames = [envConfig.{{data.domainNameEnvVar}}}, `www.${envConfig.{{data.domainNameEnvVar}}}`]
     }
 
     // Must be in us-east-1, always
     this.cloudFrontCertificate = cert.Certificate.fromCertificateArn(
       mainStack,
       "{{data.idPrefix}}CloudfrontCertificate",
-      envConfig.BuildParams.SimpleCloudFrontFrontend.CloudFrontCertificateARN);
+      envConfig.{{data.cloudFrontCertificateARNEnvVar}});
 
     this.cfDist = new cf.Distribution(mainStack, "{{data.idPrefix}}CloudFrontDistribution", {
       domainNames: mainDomainNames,
       defaultBehavior: {
-        origin: new origins.HttpOrigin(scfS3.frontendBucket.bucketWebsiteDomainName, {
-          customHeaders: { "User-Agent": envConfig.BuildParams.SimpleCloudFrontFrontend.CloudFrontConnectionSecret },
+        origin: new origins.HttpOrigin(s3.frontendBucket.bucketWebsiteDomainName, {
+          customHeaders: { "User-Agent": envConfig.{{data.cloudFrontConnectionSecretEnvVar}} },
           originShieldRegion: mainStack.region,
           protocolPolicy: cf.OriginProtocolPolicy.HTTP_ONLY,
         }),
@@ -57,24 +54,6 @@ export class {{data.idPrefix}}{{data.classPrefix}}CloudFront {
         cachedMethods: cf.CachedMethods.CACHE_GET_HEAD,
         viewerProtocolPolicy: cf.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         compress: true
-      },
-
-      additionalBehaviors: {
-        [envConfig.BuildParams.SimpleECSBackend.ApiPath]: {
-          origin: new origins.LoadBalancerV2Origin(sebAlb.alb, {
-            customHeaders: { "User-Agent": envConfig.BuildParams.SimpleCloudFrontFrontend.CloudFrontConnectionSecret },
-            originShieldRegion: mainStack.region,
-            protocolPolicy: cf.OriginProtocolPolicy.HTTPS_ONLY,
-            originSslProtocols: [cf.OriginSslPolicy.TLS_V1_2],
-            readTimeout: cdk.Duration.seconds(60),
-            keepaliveTimeout: cdk.Duration.seconds(60),
-          }),
-          originRequestPolicy: cf.OriginRequestPolicy.ALL_VIEWER,
-          cachePolicy: cf.CachePolicy.CACHING_DISABLED,
-          allowedMethods: cf.AllowedMethods.ALLOW_ALL,
-          viewerProtocolPolicy: cf.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-          compress: true
-        }
       },
       defaultRootObject: "index.html",
       enabled: true,
@@ -85,24 +64,12 @@ export class {{data.idPrefix}}{{data.classPrefix}}CloudFront {
 
 
     this.dnsRecord = new r53.ARecord(mainStack, "{{data.idPrefix}}CloudfrontDNSRecord", {
-      recordName: envConfig.BuildParams.Root.DomainName,
-      zone: hostedZoneRoot.appHostedZone,
+      recordName: envConfig.{{data.domainNameEnvVar}},
+      zone: hostedZone.appHostedZone,
       target: r53.RecordTarget.fromAlias(new r53_targets.CloudFrontTarget(this.cfDist)),
       ttl: cdk.Duration.minutes(30),
       comment: "Frontend",
     });
-
-
-    if (envConfig.Environment === DeploymentEnvEnum.BLUE_PROD) {
-      this.dnsRecord2 = new r53.ARecord(mainStack, "{{data.idPrefix}}CloudfrontDNSRecord2", {
-        recordName: `www.${envConfig.BuildParams.Root.DomainName}`,
-        zone: hostedZoneRoot.appHostedZone,
-        target: r53.RecordTarget.fromAlias(new r53_targets.CloudFrontTarget(this.cfDist)),
-        ttl: cdk.Duration.minutes(30),
-        comment: "Frontend for www",
-      });
-    }
-
 
     // Tag resources
     cdk.Tags.of(this.cfDist).add("Name", "{{data.idPrefix}}.cf-distribution");

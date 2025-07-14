@@ -1,0 +1,20 @@
+name < Full Simple Frontend And Backend
+template file < s3_scf.template
+
+env
+  AwsAccountId < 111111111
+  AwsRegion < eu-west-1
+  Environment < prod
+  ProjectName < climbing-app
+
+dep
+  Simple Hosted Zone
+  Simple Network With NAT
+
+  Simple Cloudfront Frontend
+  Simple Cloudfront Backend
+
+input
+  idPrefix < Scf
+  namePrefix < scf
+  classPrefix < null

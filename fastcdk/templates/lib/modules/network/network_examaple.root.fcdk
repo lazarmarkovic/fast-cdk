@@ -1,0 +1,36 @@
+# Test Network Template stuff
+
+Climbing app dev: Empty Project {
+  stack name = ClimbingAppDev
+  project name = climbing-app-dev
+  use testing env
+
+  My Climbing App Project
+}
+
+
+Climbing app test setup: Empty Submodule {
+  name prefix = climbing-backend
+  id prefix = CB
+
+  network 1
+  network 2
+}
+
+
+network 1: Simple Network With NAT {
+  file name = network1
+
+  enableDnsSupport = true
+  # When we don't set any param, default values are being used
+}
+
+
+network 2: Simple Network With NAT {
+  file_name = network2
+  enableDnsSupport = false
+}
+
+
+
+

@@ -7,7 +7,7 @@ import { EnvConfig } from "../../config/configSchema";
 import { PrefixModel } from "../../mics/prefixModel";
 
 
-export class {{data.idPrefix}}{{data.classPrefix}}Network {
+export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
   public readonly vpc: ec2.Vpc;
   {% if data.addPublicSubnet %}
   public readonly publicVpcSubnetsSelection: ec2.SubnetSelection;
@@ -30,7 +30,7 @@ export class {{data.idPrefix}}{{data.classPrefix}}Network {
   ) {
     this.vpc = new ec2.Vpc(mainStack, "{{data.idPrefix}}VPC", {
       vpcName: "{{data.namePrefix}}.vpc",
-      ipAddresses: ec2.IpAddresses.cidr(envConfig.BuildParams.Root.VpcCidr),
+      ipAddresses: ec2.IpAddresses.cidr(envConfig.{{data.vpcCidrEnvVar}}),
       maxAzs: {{ data.maxAzs | int }},
       natGateways: {{ data.natGateways | int }},
       enableDnsSupport: {{ data.enableDnsSupport | lower }},

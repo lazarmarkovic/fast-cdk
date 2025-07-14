@@ -1,0 +1,26 @@
+// External imports
+import * as cdk from "aws-cdk-lib";
+import * as logs from "aws-cdk-lib/aws-logs";
+
+// Config import
+import { EnvConfig } from "../../config/configSchema";
+import { PrefixModel } from "../../mics/prefixModel";
+
+
+export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
+  public readonly cloudWatchLogGroup: logs.LogGroup;
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+    prefix: PrefixModel,
+  ) {
+    this.cloudWatchLogGroup = new logs.LogGroup(mainStack, "{{data.idPrefix}}CwLogGroup", {
+      logGroupName: "{data.namePrefix}}.log-group",
+      retention: logs.RetentionDays.THREE_MONTHS,
+    });
+
+    // Tag resources
+    cdk.Tags.of(this.cloudWatchLogGroup).add("Name", "{{data.namePrefix}}.log-group");
+  }
+}

@@ -1,0 +1,17 @@
+s3_based_cloudfront_full_frontend {
+
+  template_file = main.s3cf.template
+  place = s3based-cloudfront-frontend/main.s3cf.ts
+
+  env_vars {
+    BuildParams.Root.GitOwner = git-user-or-org-name
+    BuildParams.SimpleCloudFrontFrontend.GitRepoName = git-repo-name
+    SimpleCloudFrontFrontend.GitRepoPullBranchName = git-pull-branch-name
+  }
+
+  default_inputs {
+    idPrefix = Scf
+    namePrefix = scf
+    classPrefix = null
+  }
+}

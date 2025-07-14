@@ -1,0 +1,80 @@
+// External imports
+import * as cdk from "aws-cdk-lib";
+
+// Config imports
+import { EnvConfig } from "../config/configSchema";
+import { PrefixModel } from "../mics/prefixModel";
+
+// Root imports
+import { NetworkRoot } from "./root/network.root";
+import { S3Root } from "./root/s3.root";
+import { HostedZoneRoot } from "./root/hostedZone.root";
+import { GitOidcRoot } from "./root/gitOidc.root";
+import { BaseEcrRepoRoot } from "./root/baseEcr.root";
+import { ScfMain } from "./simple-cloudfront-frontend/main.scf";
+import { SebMain } from "./simple-ecs-backend/main.seb";
+
+
+export class StackRoot extends cdk.Stack {
+  public readonly networkRoot: NetworkRoot;
+  public readonly s3Root: S3Root;
+  public readonly hostedZoneRoot: HostedZoneRoot;
+  public readonly gitOidcRoot: GitOidcRoot;
+  public readonly baseEcrRepoRoot: BaseEcrRepoRoot;
+  public readonly sebMain: SebMain;
+  public readonly scfMain: ScfMain;
+
+  constructor(
+    scope: cdk.App,
+    id: string,
+    envConfig: EnvConfig,
+  ) {
+    super(
+      scope,
+      id,
+      {
+        env: {
+          account: envConfig.AwsAccountId,
+          region: envConfig.AwsRegion,
+        }
+      }
+    );
+
+    // Set root prefix
+    const namePrefix = `${envConfig.Environment}.${envConfig.ProjectName}`;
+    const prefix = new PrefixModel(namePrefix, "Root");
+
+    // Root constructs
+    this.networkRoot = new NetworkRoot(this, envConfig, prefix);
+    this.s3Root = new S3Root(this, envConfig, prefix);
+
+    // Optional additional constructs
+    this.hostedZoneRoot = new HostedZoneRoot(this, envConfig, prefix);
+    this.gitOidcRoot = new GitOidcRoot(this, envConfig, prefix);
+    this.baseEcrRepoRoot = new BaseEcrRepoRoot(this, envConfig, prefix);
+
+
+
+    // Backend
+    this.sebMain = new SebMain(
+      this,
+      envConfig,
+      prefix,
+      this.networkRoot,
+      this.hostedZoneRoot,
+      this.s3Root,
+      this.baseEcrRepoRoot,
+      this.gitOidcRoot,
+    );
+
+    // Frontend
+    this.scfMain = new ScfMain(
+      this,
+      envConfig,
+      prefix,
+      this.hostedZoneRoot,
+      this.gitOidcRoot,
+      this.sebMain.sebAlb,
+    );
+  }
+}

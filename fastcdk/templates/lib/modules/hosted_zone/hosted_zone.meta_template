@@ -1,0 +1,17 @@
+hosted_zone {
+  template_file = hosted_zone.template
+  place = /root/hosted-zone.root.ts
+
+  deps {}
+
+  env_vars {
+    baseDomainNameEnvVar = BuildParams.Root.BaseDomainName = some:ARN:of:AWS
+  }
+
+  default_input {
+    idPrefix = Root
+    namePrefix = root
+    classPrefix = null
+    className = HostedZone
+  }
+}

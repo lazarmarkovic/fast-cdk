@@ -1,0 +1,29 @@
+// External imports
+import * as cdk from "aws-cdk-lib";
+import * as ecr from "aws-cdk-lib/aws-ecr";
+
+// Config imports
+import { EnvConfig } from "../../config/configSchema";
+import { PrefixModel } from "../../mics/prefixModel";
+
+
+export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
+  public readonly ecrRepo: ecr.IRepository;
+  public readonly containerName: string
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+    prefix: PrefixModel,
+  ) {
+    this.ecrRepo = ecr.Repository.fromRepositoryArn(
+      mainStack,
+      "{{data.idPrefix}}EcrRepo",
+      envConfig.{{data.ecrRepoArnEnvVar}}
+    );
+    this.containerName = `${prefix.namePrefixWithDashes}`;
+
+    // Tag resources
+    cdk.Tags.of(this.ecrRepo).add("Name", `${prefix.namePrefix}.ecr-repo`);
+  }
+}

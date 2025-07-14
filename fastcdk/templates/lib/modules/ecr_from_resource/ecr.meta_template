@@ -1,0 +1,18 @@
+ecr_from_resource {
+
+  template_file = ecr.template
+  place = /root/ecr.root.ts
+
+  deps {}
+
+  env_vars {
+    ecrRepoArnEnvVar = BuildParams.Root.EcrRepoARN = some:ARN:of:AWS
+  }
+
+  default_input {
+    idPrefix = Root
+    namePrefix = root
+    classPrefix = null
+    className = Ecr
+  }
+}

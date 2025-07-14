@@ -1,0 +1,24 @@
+// External imports
+import * as cdk from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
+
+// Config imports
+import { EnvConfig } from "../../config/configSchema";
+import { PrefixModel } from "../../mics/prefixModel";
+
+
+export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
+  public readonly oidcProvider: iam.IOpenIdConnectProvider;
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+    prefix: PrefixModel,
+  ) {
+    this.oidcProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
+      mainStack,
+      "{{data.idPrefix}}OpenIdConnectProvider`,
+      envConfig.{{data.openIdConnectProviderARNEnvVar}}
+    );
+  }
+}

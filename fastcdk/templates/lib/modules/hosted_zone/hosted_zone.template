@@ -7,7 +7,7 @@ import { EnvConfig } from "../../config/configSchema";
 import { PrefixModel } from "../../mics/prefixModel";
 
 
-export class {{data.idPrefix}}{{data.classPrefix}}HostedZoneRoot {
+export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
   public readonly appHostedZone: r53.IHostedZone;
 
   constructor(
@@ -18,7 +18,7 @@ export class {{data.idPrefix}}{{data.classPrefix}}HostedZoneRoot {
     this.appHostedZone = r53.HostedZone.fromLookup(
       mainStack,
       "{{data.idPrefix}}HostedZone",
-      { domainName: envConfig.BuildParams.Root.BaseDomainName }
+      { domainName: envConfig.{{data.baseDomainNameEnvVar}} }
     );
 
     // Tag resources
