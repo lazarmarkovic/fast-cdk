@@ -1,0 +1,43 @@
+// External imports
+import * as cdk from "aws-cdk-lib";
+
+// Config import
+import { EnvConfig } from "../../config/configSchema";
+import { DeploymentEnvEnum } from "../../mics/deploymentEnvEnum";
+
+// Root construct imports
+//
+{% for rc in data.root_constructs -%}
+import { {{rc.class}} } from "../{{rc.place}}";
+{% endfor %}
+
+// This substack constructs imports
+//
+{% for sc in data.substack_constructs -%}
+import { {{sc.class}} } from "../{{sc.place}}";
+{% endfor %}
+
+
+export class {{data.className}} {
+  // Holders of substack constructs
+  //
+  {% for sc in data.substack_constructs -%}
+  public readonly {{ sc.class[0]|lower + sc.class[1:] }}: {{sc.class}};
+  {% endfor %}
+
+  // Constructor gets all Root constructs and other Substacks
+  //
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+
+    {% for rc in data.root_constructs -%}
+    {{ rc.class[0]|lower + sc.class[1:] }}: {{rc.class}},
+    {% endfor %}
+  ) {
+
+    // Init of all this substack constructs
+    //
+    // ....
+  }
+}

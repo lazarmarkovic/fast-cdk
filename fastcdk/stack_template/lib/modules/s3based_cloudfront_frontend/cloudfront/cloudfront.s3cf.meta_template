@@ -1,0 +1,31 @@
+s3_based_cloudfront {
+
+  template_file = cloudfront.s3cf.template
+  place = /s3based-cloudfront-frontend/cloudfront.s3cf.ts
+
+  deps {
+    main_hosted_zone = hosted_zone {
+      place = /root/hostedZone.root.ts
+      idPrefix = Root
+      namePrefix = root
+      className = HostedZone
+    }
+
+    s3_bucket_for_cloudfront
+  }
+
+  env_vars {
+    domainNameEnvVar = BuildParams.Root.DomainName = test.com
+    cloudFrontConnectionSecretEnvVar = BuildParams.S3BasedCF.CloudFrontConnectionSecret = my-secret-string
+    cloudFrontCertificateARNEnvVar = BuildParams.S3BasedCF.CloudFrontCertificateARN = my-cf-cert
+  }
+
+  default_input {
+    idPrefix = S3cf
+    namePrefix = s3cf
+    classPrefix = null
+    className = CloudFront
+  }
+}
+
+

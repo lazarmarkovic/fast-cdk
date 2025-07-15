@@ -1,0 +1,16 @@
+substack {
+
+  template_file = substack.template
+  default_place = substack-example-path/substack.ts
+
+  deps {}
+
+  env_vars {}
+
+  default_inputs {
+    idPrefix = Sub
+    namePrefix = sub
+    classPrefix = null
+    className = Substack
+  }
+}

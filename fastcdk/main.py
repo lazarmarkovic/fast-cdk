@@ -1,7 +1,7 @@
 from jinja2 import StrictUndefined, Template
 from textx.metamodel import metamodel_from_str
 
-from fastcdk.meta_model.mm_tx import MM
+from fastcdk.meta_model.meta_template_grammar import MM
 from fastcdk.templates.vpc_jinja import VPC_TEMPALTE
 
 # from fastcdk.templates.vpc_jinja import VPC_TEMPALTE

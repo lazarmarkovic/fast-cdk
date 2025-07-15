@@ -1,0 +1,31 @@
+# Test Network Template stuff
+
+climbing_app = stack {
+  awsAccountId = 111111111
+  awsRegion = eu-west-1
+  awsStackName = ClimbingAppDev
+  project = climbing-app-dev
+  exe_env = staging
+}
+
+
+network_substack = substack {
+  idPrefix = NetworksHolder
+  namePrefix = networks-holder
+  classPrefix = NetHold
+  className = NetworkHolder
+
+  network_1
+  network_2
+}
+
+
+network_1 = network_with_nat {
+  enableDnsSupport = true
+  # When we don't set any param, default values are being used
+}
+
+
+network_2 = network_with_nat {
+  enableDnsSupport = false
+}

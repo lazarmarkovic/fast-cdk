@@ -1,0 +1,23 @@
+s3_based_cloudfront_full_frontend {
+
+  template_file = main.s3cf.template
+  default_place = s3based-cloudfront-frontend/main.s3cf.ts
+
+  deps {
+    main_hosted_zone
+    git_oidc_from_resource
+
+    s3_bucket_for_cloudfront
+    s3_based_cloudfront
+    s3_based_cloudfront_git_oidc_role
+  }
+
+  env_vars {}
+
+  default_inputs {
+    idPrefix = Scf
+    namePrefix = scf
+    classPrefix = null
+    className = Main
+  }
+}

@@ -1,0 +1,29 @@
+network_with_nat {
+
+  template_file = network.template
+  default_place = root/network.root.ts
+
+  deps {}
+
+  env_vars {
+    vpcCidrEnvVar = BuildParams.Root.VpcCidr = 10.0.0.0/16
+  }
+
+  default_inputs {
+    idPrefix = Root
+    namePrefix = root
+    classPrefix = null
+    className = Network
+    
+    maxAzs = 3
+    natGateways = 1
+    enableDnsSupport = true
+    enableDnsHostnames = true
+
+    addPublicSubnet = true
+    addPrivateWithEgressSubnet = false
+    addPrivateIsolatedSubnet = false
+
+    addS3Endpoint = true
+  }
+}

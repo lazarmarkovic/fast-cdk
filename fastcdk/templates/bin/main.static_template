@@ -1,7 +1,0 @@
-template file < main.static_template
-
-env
-  AwsStackName < 111111111
-  ProjectName < eu-west-1
-  Environment < prod
-  Version < 1.0.0

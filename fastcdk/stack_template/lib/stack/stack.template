@@ -1,0 +1,53 @@
+// External imports
+import * as cdk from "aws-cdk-lib";
+
+// Config imports
+import { EnvConfig } from "../config/configSchema";
+
+// Root constructs imports
+//
+{% for rc in data.root_constructs -%}
+import { {{rc.class}} } from "../{{rc.place}}";
+{% endfor %}
+
+
+// Substacks imports 
+//
+{% for subs in data.substacks -%}
+import { {{subs.class}} } from "../{{subs.place}}";
+{% endfor %}
+
+
+export class StackRoot extends cdk.Stack {
+  // Holder of all root constructs
+  //
+  {% for rc in data.root_constructs -%}
+  public readonly {{ rc.class[0]|lower + rc.class[1:] }}: {{rc.class}};
+  {% endfor %}
+
+  constructor(
+    scope: cdk.App,
+    id: string,
+    envConfig: EnvConfig,
+  ) {
+    super(
+      scope,
+      id,
+      {
+        env: {
+          account: envConfig.AwsAccountId,
+          region: envConfig.AwsRegion,
+        }
+      }
+    );
+
+    // Root Constructs
+    //
+    // ....
+
+    // substacks
+    //
+    // ....
+
+  }
+}

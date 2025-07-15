@@ -1,0 +1,16 @@
+git_oidc_from_resource {
+
+  template_file = git_oidc.go.template
+  default_place = root/git_oidc.root.ts
+
+  env_vars {
+    openIdConnectProviderARNEnvVar = BuildParams.Root.OpenIdConnectProviderARN = my-OpenIdConnectProviderARN
+  }
+
+  default_input {
+    idPrefix = Root
+    namePrefix = root
+    classPrefix = null
+    className = GitOidcRoot
+  }
+}
