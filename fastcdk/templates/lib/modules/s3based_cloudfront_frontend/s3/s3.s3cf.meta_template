@@ -1,7 +1,7 @@
-s3_bucket_for_cloudfront: Submodule {
+s3_bucket_for_cloudfront {
 
   template_file = s3.s3cf.template
-  place = s3based-cloudfront-frontend/s3.s3cf.ts
+  default_place = s3based-cloudfront-frontend/s3.s3cf.ts
 
   env_vars {
     s3BucketNameEnvVar = BuildParams.S3BasedCF.S3BucketName = my-frontend-bucket
@@ -9,6 +9,8 @@ s3_bucket_for_cloudfront: Submodule {
   }
 
   default_input {
+    project = MyProject
+    exe_env = null
     idPrefix = S3cf
     namePrefix = s3cf
     classPrefix = null

@@ -5,14 +5,13 @@ import * as codedeploy from "aws-cdk-lib/aws-codedeploy";
 
 // Config imports
 import { EnvConfig } from "../../config/configSchema";
-import { PrefixModel } from "../../mics/prefixModel";
 
 // Root imports
-import { {{data.git_oidc.class}} } from "../{{data.git_oidc.place}}";
+import { {{data.git_oidc_from_resource.class}} } from "../{{data.git_oidc_from_resource.place}}";
 
 // Local imports
 import { {{data.s3_bucket_for_cloudfront.class}} } from "../{{data.s3_bucket_for_cloudfront.place}}";
-import { {{data.s3_based_cloudfront.class}} } from "./{{data.s3_based_cloudfront.place}}";
+import { {{data.s3_based_cloudfront.class}} } from "../{{data.s3_based_cloudfront.place}}";
 
 
 export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
@@ -23,9 +22,8 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
-    prefix: PrefixModel,
 
-    rootGitOidc: {{data.git_oidc.class}},
+    rootGitOidc: {{data.git_oidc_from_resource.class}},
     s3: {{data.s3_bucket_for_cloudfront.class}},
     scfCloudFront: {data.s3_bucket_for_cloudfront.class}},
   ) {

@@ -4,7 +4,6 @@ import * as r53 from "aws-cdk-lib/aws-route53";
 
 // Config imports
 import { EnvConfig } from "../../config/configSchema";
-import { PrefixModel } from "../../mics/prefixModel";
 
 
 export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
@@ -13,7 +12,6 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
-    prefix: PrefixModel,
   ) {
     this.appHostedZone = r53.HostedZone.fromLookup(
       mainStack,

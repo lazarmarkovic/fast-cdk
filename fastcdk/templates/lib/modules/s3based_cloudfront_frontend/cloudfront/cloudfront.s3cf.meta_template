@@ -21,6 +21,8 @@ s3_based_cloudfront {
   }
 
   default_input {
+    project = MyProject
+    exe_env = null
     idPrefix = S3cf
     namePrefix = s3cf
     classPrefix = null

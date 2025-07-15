@@ -1,15 +1,17 @@
 network_with_nat {
 
   template_file = network.template
-  place = /root/network.root.ts
+  default_place = root/network.root.ts
 
   deps {}
 
   env_vars {
-    vpcCidrEnvVar = BuildParams.Root.VpcCidr < 10.0.0.0/16
+    vpcCidrEnvVar = BuildParams.Root.VpcCidr = 10.0.0.0/16
   }
 
   default_inputs {
+    project = MyProject
+    exe_env = null
     idPrefix = Root
     namePrefix = root
     classPrefix = null

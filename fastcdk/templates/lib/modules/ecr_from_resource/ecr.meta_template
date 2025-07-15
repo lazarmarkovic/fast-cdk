@@ -1,7 +1,7 @@
 ecr_from_resource {
 
   template_file = ecr.template
-  place = /root/ecr.root.ts
+  default_place = root/ecr.root.ts
 
   deps {}
 
@@ -10,6 +10,8 @@ ecr_from_resource {
   }
 
   default_input {
+    project = MyProject
+    exe_env = null
     idPrefix = Root
     namePrefix = root
     classPrefix = null

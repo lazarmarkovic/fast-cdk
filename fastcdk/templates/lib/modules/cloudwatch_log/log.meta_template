@@ -1,13 +1,15 @@
 cloudwatch_log_group {
 
   template_file = log.template
-  place = /root/log.root.ts
+  default_place = root/log.root.ts
 
   deps {}
 
   env_vars {}
 
   default_input {
+    project = MyProject
+    exe_env = null
     idPrefix = Root
     namePrefix = root
     classPrefix = null
