@@ -1,3 +1,5 @@
+{% if data.isClassDef %}
+// External imports
 import * as cdk from "aws-cdk-lib";
 import * as cert from "aws-cdk-lib/aws-certificatemanager";
 import * as cf from "aws-cdk-lib/aws-cloudfront";
@@ -73,3 +75,11 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
     cdk.Tags.of(this.cfDist).add("Name", "{{data.idPrefix}}.cf-distribution");
   }
 }
+{%- elif data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(
+  mainStack, 
+  envConfig,
+
+  this.{{ data.hosted_zone.class[0] + data.hosted_zone.class[1:] }},
+  this.{{ data.s3_bucket_for_cloudfront.class[0] + data.s3_bucket_for_cloudfront.class[1:] }},
+);
+{% endif %}

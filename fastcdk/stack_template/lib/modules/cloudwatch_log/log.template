@@ -1,3 +1,4 @@
+{% if data.isClassDef %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as logs from "aws-cdk-lib/aws-logs";
@@ -22,3 +23,5 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
     cdk.Tags.of(this.cloudWatchLogGroup).add("Name", "{{data.namePrefix}}.log-group");
   }
 }
+{%- elif if data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(mainStack, envConfig);
+{% endif %}

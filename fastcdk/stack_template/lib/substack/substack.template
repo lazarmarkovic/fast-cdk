@@ -22,7 +22,7 @@ export class {{data.className}} {
   // Holders of substack constructs
   //
   {% for sc in data.substack_constructs -%}
-  public readonly {{ sc.class[0]|lower + sc.class[1:] }}: {{sc.class}};
+  public readonly {{ sc.instanceName }}: {{sc.class}};
   {% endfor %}
 
   // Constructor gets all Root constructs and other Substacks
@@ -32,7 +32,7 @@ export class {{data.className}} {
     envConfig: EnvConfig,
 
     {% for rc in data.root_constructs -%}
-    {{ rc.class[0]|lower + sc.class[1:] }}: {{rc.class}},
+    {{ sc.instanceName }}: {{rc.class}},
     {% endfor %}
   ) {
 

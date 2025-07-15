@@ -15,8 +15,8 @@ s3_based_cloudfront_full_frontend {
   env_vars {}
 
   default_inputs {
-    idPrefix = Scf
-    namePrefix = scf
+    idPrefix = S3cf
+    namePrefix = s3cf
     classPrefix = null
     className = Main
   }

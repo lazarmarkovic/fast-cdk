@@ -1,3 +1,4 @@
+{% if data.isClassDef %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 
@@ -16,36 +17,44 @@ import { {{data.s3_based_cloudfront_git_oidc_role.class}} } from "../{{data.s3_b
 
 
 export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
-  public readonly scfS3: {{data.s3_bucket_for_cloudfront.class}};
-  public readonly scfCloudFront: {{data.s3_based_cloudfront.class}};
-  public readonly scfGitOidcRole: {{data.s3_based_cloudfront_git_oidc_role.class}};
+  public readonly {{data.s3_bucket_for_cloudfront.instance_name}}: {{data.s3_bucket_for_cloudfront.class}};
+  public readonly {{data.s3_based_cloudfront.instance_name}}: {{data.s3_based_cloudfront.class}};
+  public readonly {{data.s3_based_cloudfront_git_oidc_role.instance_name}}: {{data.s3_based_cloudfront_git_oidc_role.class}};
 
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
-    hostedZoneRoot: HostedZoneRoot,
-    gitOidcRoot: GitOidcRoot,
+    {{data.main_hosted_zone.instance_name}}: {{data.main_hosted_zone.class}},
+    {{data.git_oidc_from_resource.instance_name}}: {{data.git_oidc_from_resource.class}},
   ) {
     // App frontend S3 bucket
-    this.scfS3 = new {{data.s3_bucket_for_cloudfront.class}}(mainStack, envConfig);
+    this.{{data.s3_bucket_for_cloudfront.instance_name}} = new {{data.s3_bucket_for_cloudfront.class}}(mainStack, envConfig);
 
 
     // CloudFront holder
-    this.scfCloudFront = new {{data.s3_based_cloudfront.class}}(
+    this.{{data.s3_based_cloudfront.instance_name}} = new {{data.s3_based_cloudfront.class}}(
       mainStack,
       envConfig,
-      hostedZoneRoot,
-      this.scfS3
+      {{data.main_hosted_zone.instance_name}},
+      this.{{data.s3_bucket_for_cloudfront.instance_name}},
     );
 
-
     // GitHub Actions OIDC role
-    this.scfGitOidcRole = new {{data.s3_based_cloudfront_git_oidc_role.class}}(
+    this.{{data.s3_based_cloudfront_git_oidc_role.instance_name}} = new {{data.s3_based_cloudfront_git_oidc_role.class}}(
       mainStack,
       envConfig,
-      gitOidcRoot,
-      this.scfS3,
-      this.scfCloudFront
+      {{data.git_oidc_from_resource.instance_name}},
+      this.{{data.s3_bucket_for_cloudfront.instance_name}},
+      this.{{data.s3_based_cloudfront.instance_name}},
     );
   }
 }
+{%- elif if data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(
+  mainStack, 
+  envConfig,
+
+  this.{{ data.git_oidc_from_resource.instance_name }},
+  this.{{ data.s3_bucket_for_cloudfront.instance_name }},
+  this.{{ data.s3_based_cloudfront.instance_name }},
+);
+{% endif %}

@@ -22,7 +22,7 @@ export class StackRoot extends cdk.Stack {
   // Holder of all root constructs
   //
   {% for rc in data.root_constructs -%}
-  public readonly {{ rc.class[0]|lower + rc.class[1:] }}: {{rc.class}};
+  public readonly {{ rc.instanceName }}: {{rc.class}};
   {% endfor %}
 
   constructor(

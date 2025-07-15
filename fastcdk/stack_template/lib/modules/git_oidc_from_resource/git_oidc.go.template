@@ -1,3 +1,4 @@
+{% if data.isClassDef %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -20,3 +21,5 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
     );
   }
 }
+{%- elif if data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(mainStack, envConfig);
+{% endif %}

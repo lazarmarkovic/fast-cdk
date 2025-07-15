@@ -1,3 +1,4 @@
+{% if data.isClassDef %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
@@ -100,3 +101,5 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
     {% endif %}
   }
 }
+{%- elif if data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(mainStack, envConfig);
+{% endif %}
