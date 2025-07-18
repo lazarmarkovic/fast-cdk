@@ -1,0 +1,17 @@
+s3_bucket_for_cloudfront {
+
+  template_file = s3.s3cf.j2
+  default_path = s3based-cloudfront-frontend/s3.s3cf.ts
+
+  env_vars {
+    s3_bucket_name = BuildParams.S3BasedCF.S3BucketName = my-frontend-bucket
+    cloudfront_connection_secret = BuildParams.S3BasedCF.CloudFrontConnectionSecret
+  }
+
+  default_input {
+    id_prefix = S3cf
+    name_prefix = s3cf
+    class_prefix = null
+    class_name = FrontendS3Bucket
+  }
+}

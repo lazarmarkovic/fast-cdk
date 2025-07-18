@@ -6,23 +6,23 @@ import { EnvConfig } from "../config/configSchema";
 
 // Root constructs imports
 //
-{% for rc in data.root_constructs -%}
-import { {{rc.class}} } from "../{{rc.place}}";
+{% for rc in root_constructs -%}
+import { {{rc.class}} } from "../{{rc.path}}";
 {% endfor %}
 
 
 // Substacks imports 
 //
-{% for subs in data.substacks -%}
-import { {{subs.class}} } from "../{{subs.place}}";
+{% for subs in substacks -%}
+import { {{subs.class}} } from "../{{subs.path}}";
 {% endfor %}
 
 
 export class StackRoot extends cdk.Stack {
   // Holder of all root constructs
   //
-  {% for rc in data.root_constructs -%}
-  public readonly {{ rc.instanceName }}: {{rc.class}};
+  {% for rc in root_constructs -%}
+  public readonly {{ rc.instance_name }}: {{rc.class}};
   {% endfor %}
 
   constructor(

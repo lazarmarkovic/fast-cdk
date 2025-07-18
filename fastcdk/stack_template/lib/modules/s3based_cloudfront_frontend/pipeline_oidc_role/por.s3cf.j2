@@ -1,4 +1,4 @@
-{% if data.isClassDef %}
+{% if is_class_def %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -8,14 +8,14 @@ import * as codedeploy from "aws-cdk-lib/aws-codedeploy";
 import { EnvConfig } from "../../config/configSchema";
 
 // Root imports
-import { {{data.git_oidc_from_resource.class}} } from "../{{data.git_oidc_from_resource.place}}";
+import { {{git_oidc_from_resource.class}} } from "../{{git_oidc_from_resource.path}}";
 
 // Local imports
-import { {{data.s3_bucket_for_cloudfront.class}} } from "../{{data.s3_bucket_for_cloudfront.place}}";
-import { {{data.s3_based_cloudfront.class}} } from "../{{data.s3_based_cloudfront.place}}";
+import { {{s3_bucket_for_cloudfront.class}} } from "../{{s3_bucket_for_cloudfront.path}}";
+import { {{s3_based_cloudfront.class}} } from "../{{s3_based_cloudfront.path}}";
 
 
-export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
+export class {{id_prefix}}{{class_prefix}}{{class_name}} {
   public readonly codeDeployApp: codedeploy.ServerApplication;
   public readonly deploymentGroup: codedeploy.ServerDeploymentGroup;
   public readonly gitPlatformActionsRole: iam.Role;
@@ -24,18 +24,18 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
 
-    rootGitOidc: {{data.git_oidc_from_resource.class}},
-    s3: {{data.s3_bucket_for_cloudfront.class}},
-    scfCloudFront: {data.s3_bucket_for_cloudfront.class}},
+    rootGitOidc: {{git_oidc_from_resource.class}},
+    s3: {{s3_bucket_for_cloudfront.class}},
+    scfCloudFront: {{s3_based_cloudfront.class}},
   ) {
-    this.gitPlatformActionsRole = new iam.Role(mainStack, "{{data.idPrefix}}GitPlatformActionsDeployRole", {
-      roleName: "{{data.namePrefix}}.github-actions-deploy-role",
+    this.gitPlatformActionsRole = new iam.Role(mainStack, "{{id_prefix}}GitPlatformActionsDeployRole", {
+      roleName: "{{name_prefix}}.github-actions-deploy-role",
       assumedBy: new iam.FederatedPrincipal(
         rootGitOidc.oidcProvider.openIdConnectProviderArn,
         {
           "StringEquals": {
             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-            "token.actions.githubusercontent.com:sub": `repo:${envConfig.{{data.gitOwnerEnvVar}}}/${envConfig.{{data.gitRepoNameEnvVar}}}:ref:refs/heads/${envConfig.{{data.gitRepoPullBranchName}}}`,
+            "token.actions.githubusercontent.com:sub": `repo:${envConfig.{{git_owner}}}/${envConfig.{{git_repo_name}}}:ref:refs/heads/${envConfig.{{git_repo_pull_branch_name}}}`,
           },
         },
         "sts:AssumeRoleWithWebIdentity"
@@ -66,28 +66,28 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
 
 
     // Outputs - generated after deployment
-    new cdk.CfnOutput(mainStack, "{{data.idPrefix}}OutGitPlatformActionsRoleArn", {
+    new cdk.CfnOutput(mainStack, "{{id_prefix}}OutGitPlatformActionsRoleArn", {
       description: "FA ARN of the GitHub OIDC IAM Role",
       value: this.gitPlatformActionsRole.roleArn
     });
 
-    new cdk.CfnOutput(mainStack, "{{data.idPrefix}}OutS3BucketName", {
+    new cdk.CfnOutput(mainStack, "{{id_prefix}}OutS3BucketName", {
       description: "FA S3 Bucket Name",
       value: s3.frontendBucket.bucketName
     });
 
-    new cdk.CfnOutput(mainStack, "{{data.idPrefix}}OutCfDistributionId", {
+    new cdk.CfnOutput(mainStack, "{{id_prefix}}OutCfDistributionId", {
       description: "FA CloudFront Distribution ID",
       value: scfCloudFront.cfDist.distributionId
     });
   }
 }
-{%- elif if data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(
+{%- elif is_constr_def -%} new {{id_prefix}}{{class_prefix}}{{class_name}}(
   mainStack, 
   envConfig,
 
-  this.{{ data.git_oidc_from_resource.instance_name }},
-  this.{{ data.s3_bucket_for_cloudfront.instance_name }},
-  this.{{ data.s3_based_cloudfront.instance_name }},
+  this.{{ git_oidc_from_resource.instance_name }},
+  this.{{ s3_bucket_for_cloudfront.instance_name }},
+  this.{{ s3_based_cloudfront.instance_name }},
 );
 {% endif %}

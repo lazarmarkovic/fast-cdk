@@ -1,4 +1,4 @@
-{% if data.isClassDef %}
+{% if is_class_def %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as ecr from "aws-cdk-lib/aws-ecr";
@@ -7,7 +7,7 @@ import * as ecr from "aws-cdk-lib/aws-ecr";
 import { EnvConfig } from "../../config/configSchema";
 
 
-export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
+export class {{id_prefix}}{{class_prefix}}{{class_name}} {
   public readonly ecrRepo: ecr.IRepository;
   public readonly containerName: string
 
@@ -17,14 +17,14 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
   ) {
     this.ecrRepo = ecr.Repository.fromRepositoryArn(
       mainStack,
-      "{{data.idPrefix}}EcrRepo",
-      envConfig.{{data.ecrRepoArnEnvVar}}
+      "{{id_prefix}}EcrRepo",
+      envConfig.{{ecr_repo_arn}}
     );
-    this.containerName = "{{data.namePrefixDash}}";
+    this.containerName = "{{name_prefix}}-container";
 
     // Tag resources
-    cdk.Tags.of(this.ecrRepo).add("Name", "{{data.namePrefix}}.ecr-repo");
+    cdk.Tags.of(this.ecrRepo).add("Name", "{{name_prefix}}.ecr-repo");
   }
 }
-{%- elif if data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(mainStack, envConfig);
+{%- elif is_constr_def -%} new {{id_prefix}}{{class_prefix}}{{class_name}}(mainStack, envConfig);
 {% endif %}

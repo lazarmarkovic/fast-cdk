@@ -1,0 +1,121 @@
+// Top-level entry point
+MetaTemplate:
+    name=ID "{"
+        template_file=TemplateFileAssign
+        default_path=DefaultPlaceAssign
+        deps_section?
+        env_vars_section?
+        default_inputs_section=DefaultInputsSection
+    "}"
+;
+
+TemplateFileAssign:
+    "template_file" "=" val=PATH
+;  
+DefaultPlaceAssign:
+    "default_path" "=" val=PATH
+;
+
+// simple key = value pair where value is a bare path/filename
+Setting:
+    key=ID "=" val=PATH
+;
+
+PATH: /[A-Za-z0-9_\-\.\/\\:]+/ ;
+
+// -----------------------------------------------------------------------------
+// deps_section: a list of DepEntry’s inside “deps { … }”
+// -----------------------------------------------------------------------------
+deps_section:
+    "deps" "{"
+      entries*=DepEntry
+    "}"
+;
+
+// -----------------------------------------------------------------------------
+// DepEntry: 
+//   key=ID "=" type=ID [ "{" props+=Setting* "}" ]   // named, opt-block
+// | type=ID       [ "{" props+=Setting* "}" ]        // unnamed, opt-block
+// -----------------------------------------------------------------------------
+DepEntry:
+      key=ID "=" type=ID ( "{" props+=Setting "}" )?
+    |               type=ID ( "{" props+=Setting "}" )?
+;
+
+
+// -------------------------------------------------------------------
+// env_vars_section: zero or more EnvVar entries inside "env_vars { … }"
+// -------------------------------------------------------------------
+env_vars_section:
+    "env_vars" "{"
+        entries*=EnvVar
+    "}"
+;
+
+// -------------------------------------------------------------------
+// EnvVar: 
+//   key=ID "=" ref=RefPath "=" val=PATH
+// 
+//  - key: your env-var name
+//  - RefPath: dot-separated identifier (e.g. BuildParams.Root.DomainName)
+//  - val: bare token (letters, digits, dashes or dots)—no quotes needed
+// -------------------------------------------------------------------
+EnvVar:
+    key=ID "=" ref=RefPath "=" val=PATH
+;
+
+// -------------------------------------------------------------------
+// RefPath: one or more ID segments separated by "."
+//    e.g. BuildParams.Root.DomainName
+// -------------------------------------------------------------------
+RefPath:
+    parts+=ID["."]
+;
+
+
+// default_inputs { k = v; ... }
+DefaultInputsSection:
+    "default_inputs" "{"
+        id_prefix=IdPrefixAssign
+        name_prefix=NamePrefixAssign
+        class_prefix=ClassPrefixAssign
+        class_name=ClassNameAssign
+
+        inputs*=InputAssign
+    "}"
+;
+
+IdPrefixAssign:
+    "id_prefix" "=" val=Value
+;
+
+NamePrefixAssign:
+    "name_prefix" "=" val=Value
+;
+
+ClassPrefixAssign:
+    "class_prefix" "=" val=Value
+;
+
+ClassNameAssign:
+    "class_name" "=" val=Value
+;
+
+InputAssign:
+    key=ID "=" val=Value
+;
+
+// values in default_inputs can be int, float, bool or bare strings
+Value:
+      FLOAT
+    | INT
+    | BOOL
+    | ID
+    | PATH
+    | NULL
+;
+
+BOOL:  "true" | "false" ;
+NULL:  "null" ;
+
+Comment: /#[^\n]*/ ;

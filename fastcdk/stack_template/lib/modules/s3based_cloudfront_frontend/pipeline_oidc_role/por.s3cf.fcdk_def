@@ -1,0 +1,25 @@
+s3_based_cloudfront_git_oidc_role {
+
+  template_file = por.s3cf.j2
+  path = s3based-cloudfront-frontend/por.s3cf.ts
+
+  deps {
+    git_oidc_from_resource
+    s3_based_cloudfront
+    main_hosted_zone
+    s3_bucket_for_cloudfront # u koliko koristi isti naziv uzima referencu na postojeci ne pravi novi osim ako nije napravljen sa "custom_name = meta_tempalte oblikom"
+  }
+
+  env_vars {
+    git_owner = BuildParams.Root.GitOwner = git-user-or-org-name
+    git_repo_name = BuildParams.S3BasedCF.GitRepoName = git-repo-name
+    git_repo_pull_branch_name = BuildParams.S3BasedCF.GitRepoPullBranchName = git-pull-branch-name
+  }
+
+  default_input {
+    id_prefix = S3cf
+    name_prefix = s3cf
+    class_prefix = null
+    class_name = GitOidcRole
+  }
+}

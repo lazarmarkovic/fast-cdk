@@ -1,4 +1,4 @@
-{% if data.isClassDef %}
+{% if is_class_def %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as cert from "aws-cdk-lib/aws-certificatemanager";
@@ -12,12 +12,12 @@ import { EnvConfig } from "../../config/configSchema";
 import { DeploymentEnvEnum } from "../../mics/deploymentEnvEnum";
 
 // Root imports
-import { {{data.hosted_zone.class}} } from "../{{data.hosted_zone.place}}";
+import { {{hosted_zone.class}} } from "../{{hosted_zone.path}}";
 
 // Local imports
-import { {{data.s3_bucket_for_cloudfront.class}} } from "../{{data.s3_bucket_for_cloudfront.place}}";
+import { {{s3_bucket_for_cloudfront.class}} } from "../{{s3_bucket_for_cloudfront.path}}";
 
-export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
+export class {{id_prefix}}{{class_prefix}}{{class_name}} {
   private readonly deploymentEnv: string;
   public readonly cfDist: cf.Distribution;
   public readonly dnsRecord: r53.RecordSet;
@@ -27,25 +27,25 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
-    hostedZone: {{data.hosted_zone.class}},
-    s3: {{data.s3_bucket_for_cloudfront.class}},
+    hostedZone: {{hosted_zone.class}},
+    s3: {{s3_bucket_for_cloudfront.class}},
   ) {
-    let mainDomainNames = [envConfig.{{data.domainNameEnvVar}}];
+    let mainDomainNames = [envConfig.{{domain_name}}];
     if (envConfig.Environment === DeploymentEnvEnum.BLUE_PROD) {
-      mainDomainNames = [envConfig.{{data.domainNameEnvVar}}}, `www.${envConfig.{{data.domainNameEnvVar}}}`]
+      mainDomainNames = [envConfig.{{domain_name}}}, `www.${envConfig.{{domain_name}}}`]
     }
 
     // Must be in us-east-1, always
     this.cloudFrontCertificate = cert.Certificate.fromCertificateArn(
       mainStack,
-      "{{data.idPrefix}}CloudfrontCertificate",
-      envConfig.{{data.cloudFrontCertificateARNEnvVar}});
+      "{{id_prefix}}CloudfrontCertificate",
+      envConfig.{{cloudfront_certificate_arn}});
 
-    this.cfDist = new cf.Distribution(mainStack, "{{data.idPrefix}}CloudFrontDistribution", {
+    this.cfDist = new cf.Distribution(mainStack, "{{id_prefix}}CloudFrontDistribution", {
       domainNames: mainDomainNames,
       defaultBehavior: {
         origin: new origins.HttpOrigin(s3.frontendBucket.bucketWebsiteDomainName, {
-          customHeaders: { "User-Agent": envConfig.{{data.cloudFrontConnectionSecretEnvVar}} },
+          customHeaders: { "User-Agent": envConfig.{{cloudfront_connection_secret}} },
           originShieldRegion: mainStack.region,
           protocolPolicy: cf.OriginProtocolPolicy.HTTP_ONLY,
         }),
@@ -63,8 +63,8 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
     });
 
 
-    this.dnsRecord = new r53.ARecord(mainStack, "{{data.idPrefix}}CloudfrontDNSRecord", {
-      recordName: envConfig.{{data.domainNameEnvVar}},
+    this.dnsRecord = new r53.ARecord(mainStack, "{{id_prefix}}CloudfrontDNSRecord", {
+      recordName: envConfig.{{domain_name}},
       zone: hostedZone.appHostedZone,
       target: r53.RecordTarget.fromAlias(new r53_targets.CloudFrontTarget(this.cfDist)),
       ttl: cdk.Duration.minutes(30),
@@ -72,14 +72,14 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
     });
 
     // Tag resources
-    cdk.Tags.of(this.cfDist).add("Name", "{{data.idPrefix}}.cf-distribution");
+    cdk.Tags.of(this.cfDist).add("Name", "{{id_prefix}}.cf-distribution");
   }
 }
-{%- elif data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(
+{%- elif is_constr_def -%} new {{id_prefix}}{{class_prefix}}{{class_name}}(
   mainStack, 
   envConfig,
 
-  this.{{ data.hosted_zone.class[0] + data.hosted_zone.class[1:] }},
-  this.{{ data.s3_bucket_for_cloudfront.class[0] + data.s3_bucket_for_cloudfront.class[1:] }},
+  this.{{hosted_zone.instance_name}},
+  this.{{s3_bucket_for_cloudfront.instance_name}},
 );
 {% endif %}

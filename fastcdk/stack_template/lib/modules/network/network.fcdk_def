@@ -1,0 +1,29 @@
+network_with_nat {
+
+  template_file = network.j2
+  default_path = root/network.root.ts
+
+  deps {}
+
+  env_vars {
+    vpc_cidr = BuildParams.Root.VpcCidr = 10.0.0.0/16
+  }
+
+  default_inputs {
+    id_prefix = Root
+    name_prefix = root
+    class_prefix = null
+    class_name = Network
+    
+    max_azs = 3
+    nat_gateways = 1
+    enable_dns_support = true
+    enable_dns_host_names = true
+
+    add_public_subnet = true
+    add_private_with_egress_subnet = false
+    add_private_isolated_subnet = false
+
+    add_s3_endpoint = true
+  }
+}

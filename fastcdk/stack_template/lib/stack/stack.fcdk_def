@@ -1,0 +1,12 @@
+stack {
+  template_file = stack.template
+  default_path = stack.ts
+
+  env_vars {
+    aws_stack_name = ExampleStack
+    aws_account_id = 111111111
+    aws_region = eu-west-1
+    exe_env = staging
+    project_name = climbing-app
+  }
+}

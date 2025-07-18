@@ -1,0 +1,27 @@
+{% if is_class_def %}
+// External imports
+import * as cdk from "aws-cdk-lib";
+import * as logs from "aws-cdk-lib/aws-logs";
+
+// Config import
+import { EnvConfig } from "../../config/configSchema";
+
+
+export class {{id_prefix}}{{class_prefix}}{{class_name}} {
+  public readonly cloudWatchLogGroup: logs.LogGroup;
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+  ) {
+    this.cloudWatchLogGroup = new logs.LogGroup(mainStack, "{{id_prefix}}CwLogGroup", {
+      logGroupName: "{{name_prefix}}.log-group",
+      retention: logs.RetentionDays.THREE_MONTHS,
+    });
+
+    // Tag resources
+    cdk.Tags.of(this.cloudWatchLogGroup).add("Name", "{{name_prefix}}.log-group");
+  }
+}
+{%- elif is_constr_def -%} new {{id_prefix}}{{class_prefix}}{{class_name}}(mainStack, envConfig);
+{% endif %}

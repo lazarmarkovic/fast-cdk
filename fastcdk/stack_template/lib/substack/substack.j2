@@ -7,22 +7,22 @@ import { DeploymentEnvEnum } from "../../mics/deploymentEnvEnum";
 
 // Root construct imports
 //
-{% for rc in data.root_constructs -%}
-import { {{rc.class}} } from "../{{rc.place}}";
+{% for rc in root_constructs -%}
+import { {{rc.class}} } from "../{{rc.path}}";
 {% endfor %}
 
 // This substack constructs imports
 //
-{% for sc in data.substack_constructs -%}
-import { {{sc.class}} } from "../{{sc.place}}";
+{% for sc in substack_constructs -%}
+import { {{sc.class}} } from "../{{sc.path}}";
 {% endfor %}
 
 
-export class {{data.className}} {
+export class {{class_name}} {
   // Holders of substack constructs
   //
-  {% for sc in data.substack_constructs -%}
-  public readonly {{ sc.instanceName }}: {{sc.class}};
+  {% for sc in substack_constructs -%}
+  public readonly {{ sc.instance_name }}: {{sc.class}};
   {% endfor %}
 
   // Constructor gets all Root constructs and other Substacks
@@ -31,8 +31,8 @@ export class {{data.className}} {
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
 
-    {% for rc in data.root_constructs -%}
-    {{ sc.instanceName }}: {{rc.class}},
+    {% for rc in root_constructs -%}
+    {{ sc.instance_name }}: {{rc.class}},
     {% endfor %}
   ) {
 

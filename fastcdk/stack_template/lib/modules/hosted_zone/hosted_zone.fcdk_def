@@ -1,0 +1,17 @@
+hosted_zone {
+  template_file = hosted_zone.j2
+  default_path = root/hosted-zone.root.ts
+
+  deps {}
+
+  env_vars {
+    base_domain_name = BuildParams.Root.BaseDomainName = some:ARN:of:AWS
+  }
+
+  default_input {
+    id_prefix = Root
+    name_prefix = root
+    class_prefix = null
+    class_name = HostedZone
+  }
+}

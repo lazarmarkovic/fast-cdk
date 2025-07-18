@@ -1,4 +1,4 @@
-{% if data.isClassDef %}
+{% if is_class_def %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as r53 from "aws-cdk-lib/aws-route53";
@@ -7,7 +7,7 @@ import * as r53 from "aws-cdk-lib/aws-route53";
 import { EnvConfig } from "../../config/configSchema";
 
 
-export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
+export class {{id_prefix}}{{class_prefix}}{{class_name}} {
   public readonly appHostedZone: r53.IHostedZone;
 
   constructor(
@@ -16,13 +16,13 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
   ) {
     this.appHostedZone = r53.HostedZone.fromLookup(
       mainStack,
-      "{{data.idPrefix}}HostedZone",
-      { domainName: envConfig.{{data.baseDomainNameEnvVar}} }
+      "{{id_prefix}}HostedZone",
+      { domainName: envConfig.{{base_domain_name}} }
     );
 
     // Tag resources
-    cdk.Tags.of(this.appHostedZone).add("Name", "{{data.namePrefix}}.hosting-zone");
+    cdk.Tags.of(this.appHostedZone).add("Name", "{{name_prefix}}.hosting-zone");
   }
 }
-{%- elif if data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(mainStack, envConfig);
+{%- elif is_constr_def  -%} new {{id_prefix}}{{class_prefix}}{{class_name}}(mainStack, envConfig);
 {% endif %}

@@ -1,7 +1,7 @@
 s3_based_cloudfront_full_frontend {
 
   template_file = main.s3cf.template
-  default_place = s3based-cloudfront-frontend/main.s3cf.ts
+  default_path = s3based-cloudfront-frontend/main.s3cf.ts
 
   deps {
     main_hosted_zone
@@ -15,9 +15,9 @@ s3_based_cloudfront_full_frontend {
   env_vars {}
 
   default_inputs {
-    idPrefix = S3cf
-    namePrefix = s3cf
-    classPrefix = null
-    className = Main
+    id_prefix = S3cf
+    name_prefix = s3cf
+    class_prefix = null
+    class_name = Main
   }
 }

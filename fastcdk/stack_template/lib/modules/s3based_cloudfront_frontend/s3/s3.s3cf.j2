@@ -1,4 +1,4 @@
-{% if data.isClassDef %}
+{% if is_class_def %}
 // External imports
 import * as cdk from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
@@ -9,15 +9,15 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { EnvConfig } from "../../config/configSchema";
 
 
-export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
+export class {{id_prefix}}{{class_prefix}}{{class_name}} {
   public readonly frontendBucket: s3.Bucket;
 
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
   ) {
-    this.frontendBucket = new s3.Bucket(mainStack, "{{data.idPrefix}}S3Bucket", {
-      bucketName: envConfig.{{data.s3BucketNameEnvVar}},
+    this.frontendBucket = new s3.Bucket(mainStack, "{{id_prefix}}S3Bucket", {
+      bucketName: envConfig.{{s3_bucket_name}},
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       publicReadAccess: true,
@@ -39,14 +39,14 @@ export class {{data.idPrefix}}{{data.classPrefix}}{{data.className}} {
     });
     policyStatement.addCondition(
       "StringEquals",
-      { "aws:UserAgent": envConfig.{{data.cloudFrontConnectionSecretEnvVar}} }
+      { "aws:UserAgent": envConfig.{{cloudfront_connection_secret}} }
     );
     this.frontendBucket.addToResourcePolicy(policyStatement);
 
 
     // Tag resources
-    cdk.Tags.of(this.frontendBucket).add("Name", "{{data.namePrefix}}.s3-bucket");
+    cdk.Tags.of(this.frontendBucket).add("Name", "{{name_prefix}}.s3-bucket");
   }
 }
-{%- elif if data.isConstructor -%} new {{data.idPrefix}}{{data.classPrefix}}{{data.className}}(mainStack, envConfig);
+{%- elif is_constr_def -%} new {{id_prefix}}{{class_prefix}}{{class_name}}(mainStack, envConfig);
 {% endif %}

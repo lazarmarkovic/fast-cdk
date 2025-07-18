@@ -21,11 +21,24 @@ network_substack = substack {
 
 
 network_1 = network_with_nat {
-  enableDnsSupport = true
-  # When we don't set any param, default values are being used
+  enableDnsSupport = true # When we don't set any param, default values are being used
 }
 
 
 network_2 = network_with_nat {
   enableDnsSupport = false
+}
+
+network_3 = network_with_nat {
+  enableDnsSupport = false
+}
+
+
+network_substack2 = substack {
+  idPrefix = NetworksHolder2
+  namePrefix = networks-holder2
+  classPrefix = NetHold2
+  className = NetworkHolder2
+
+  network_3
 }
