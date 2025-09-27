@@ -166,16 +166,11 @@ class FcdkDefSemantics:
   ##### Level of fcdk!
   def add_instances(self, instances):
     stacks = []
-    substacks = []
     others = []
     for i in instances:
       print("Testing: " + self.kind(i) + "   " + i.assigned_name)
       if self.kind(i) == "StackInstanceInputs":
         stacks.append(i)
-
-      elif self.kind(i) == "SubstackInstanceInputs":
-        substacks.append(i)
-
       elif self.kind(i) == "OtherInstanceInputs":
         others.append(i)
 

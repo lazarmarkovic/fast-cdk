@@ -4,7 +4,6 @@ Model:
 
 Instance:
     StackInstance
-  | SubstackInstance
   | OtherInstances
 ;
 
@@ -27,17 +26,6 @@ Project: "project" "=" val=Value;
 ExeEnv: "exe_env" "=" val=Value;
 
 
-SubstackInstance:
-  assigned_name=ID "=" "substack"
-  "{"
-    id_prefix=IdPrefixAssign
-    name_prefix=NamePrefixAssign
-    class_prefix=ClassPrefixAssign
-    class_name=ClassNameAssign
-
-    children*=Child
-  "}"
-;
 IdPrefixAssign: "id_prefix" "=" val=Value;
 NamePrefixAssign: "name_prefix" "=" val=Value;
 ClassPrefixAssign: "class_prefix" "=" val=Value;

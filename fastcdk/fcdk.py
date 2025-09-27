@@ -33,21 +33,6 @@ class StackInstanceInputs(CustomBaseObj):
     self.children.append(name)
 
 
-class SubstackInstanceInputs(CustomBaseObj):
-  def __init__(self, assigned_name, def_name, id_prefix, name_prefix, class_prefix, class_name):
-    super().__init__()
-    self.assigned_name = assigned_name
-    self.def_name = def_name
-    self.id_prefix = id_prefix
-    self.name_prefix = name_prefix
-    self.class_prefix = class_prefix
-    self.class_name = class_name
-    self.children = []
-
-  def add_child(self, name):
-    self.children.append(name)
-
-
 class OtherInstanceInputs(CustomBaseObj):
   def __init__(self, assigned_name, def_name, iobj):
     super().__init__()
@@ -90,13 +75,6 @@ class Fcdk:
         for c in i.children:
           ni.add_child(c.name)
         self.instances.append(ni)
-          
-      elif self.kind(i) == "SubstackInstance":
-        ni = SubstackInstanceInputs(i.name, "substack", i.id_prefix.val, i.name_prefix.val, i.class_prefix.val, i.class_name.val)
-        for c in i.children:
-          ni.add_child(c.name)
-        self.instances.append(ni)
-
       else:
         iobj = InputObject()
         for input in i.inputs:

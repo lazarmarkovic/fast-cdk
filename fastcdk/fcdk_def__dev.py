@@ -43,7 +43,7 @@ defs = []
 for resource, rel in cdk_project_files:
   extension = Path(resource.name).suffix
 
-  if extension == ".fcdk_def" and resource.name != "substack.fcdk_def":
+  if extension == ".fcdk_def":
     print(f"{rel} {resource.name} (extension: {extension})")
     fcdk_def1 = FcdkDef(rel / resource)
     defs.append(fcdk_def1)
