@@ -1,0 +1,27 @@
+# Test Network Template stuff
+
+climbing_app = stack {
+  aws_account_id = 111111111111
+  aws_region = eu-west-1
+  aws_stack_name = ClimbingAppDev
+  project = climbing-app-dev
+  exe_env = staging
+
+  s3_cf
+}
+
+
+s3_cf = s3_based_cloudfront_full_frontend {
+  enable_dns_support = true # When we don't set any param, default values are being used
+}
+
+
+mhz1 = main_hosted_zone {
+  default_path = root/hosted-zone-1.root.ts
+  base_domain_name = BuildParams.Root.BaseDomainName1 = some:ARN:of:AWS1
+}
+
+mhz2 = main_hosted_zone {
+  default_path = root/hosted-zone-2.root.ts
+  base_domain_name = BuildParams.Root.BaseDomainName2 = some:ARN:of:AWS2
+}

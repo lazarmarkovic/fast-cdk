@@ -1,32 +1,26 @@
-// Top-level entry point
 MetaTemplate:
     name=ID "{"
         template_file=TemplateFileAssign
-        default_path=DefaultPlaceAssign
-        deps_section?
-        env_vars_section?
-        default_inputs_section=DefaultInputsSection
+        default_path=DefaultPathAssign
+        deps=DepsSection?
+        env_vars=EnvVarsSection?
+        default_inputs=DefaultInputsSection
     "}"
 ;
 
 TemplateFileAssign:
     "template_file" "=" val=PATH
 ;  
-DefaultPlaceAssign:
+DefaultPathAssign:
     "default_path" "=" val=PATH
-;
-
-// simple key = value pair where value is a bare path/filename
-Setting:
-    key=ID "=" val=PATH
 ;
 
 PATH: /[A-Za-z0-9_\-\.\/\\:]+/ ;
 
 // -----------------------------------------------------------------------------
-// deps_section: a list of DepEntry’s inside “deps { … }”
+// DepsSection: a list of DepEntry’s inside “deps { … }”
 // -----------------------------------------------------------------------------
-deps_section:
+DepsSection:
     "deps" "{"
       entries*=DepEntry
     "}"
@@ -34,19 +28,19 @@ deps_section:
 
 // -----------------------------------------------------------------------------
 // DepEntry: 
-//   key=ID "=" type=ID [ "{" props+=Setting* "}" ]   // named, opt-block
-// | type=ID       [ "{" props+=Setting* "}" ]        // unnamed, opt-block
+//   key=ID "=" type=ID [ "{" props+=InputAssign* "}" ]   // named, opt-block
+// | type=ID       [ "{" props+=InputAssign* "}" ]        // unnamed, opt-block
 // -----------------------------------------------------------------------------
 DepEntry:
-      key=ID "=" type=ID ( "{" props+=Setting "}" )?
-    |               type=ID ( "{" props+=Setting "}" )?
+      key=ID "=" type=ID ( "{" props+=InputAssign "}" )?
+    |               type=ID ( "{" props+=InputAssign "}" )?
 ;
 
 
 // -------------------------------------------------------------------
-// env_vars_section: zero or more EnvVar entries inside "env_vars { … }"
+// EnvVarsSection: zero or more EnvVar entries inside "env_vars { … }"
 // -------------------------------------------------------------------
-env_vars_section:
+EnvVarsSection:
     "env_vars" "{"
         entries*=EnvVar
     "}"
@@ -110,8 +104,8 @@ Value:
       FLOAT
     | INT
     | BOOL
-    | ID
     | PATH
+    | ID
     | NULL
 ;
 

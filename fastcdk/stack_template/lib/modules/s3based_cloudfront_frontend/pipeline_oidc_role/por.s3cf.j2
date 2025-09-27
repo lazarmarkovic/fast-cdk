@@ -5,14 +5,14 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as codedeploy from "aws-cdk-lib/aws-codedeploy";
 
 // Config imports
-import { EnvConfig } from "../../config/configSchema";
+import { EnvConfig } from "@base/config/configSchema";
 
 // Root imports
-import { {{git_oidc_from_resource.class}} } from "../{{git_oidc_from_resource.path}}";
+import { {{git_oidc_from_resource.class}} } from "@base/{{git_oidc_from_resource.path}}";
 
 // Local imports
-import { {{s3_bucket_for_cloudfront.class}} } from "../{{s3_bucket_for_cloudfront.path}}";
-import { {{s3_based_cloudfront.class}} } from "../{{s3_based_cloudfront.path}}";
+import { {{s3_bucket_for_cloudfront.class}} } from "@base/{{s3_bucket_for_cloudfront.path}}";
+import { {{s3_based_cloudfront.class}} } from "@base/{{s3_based_cloudfront.path}}";
 
 
 export class {{id_prefix}}{{class_prefix}}{{class_name}} {

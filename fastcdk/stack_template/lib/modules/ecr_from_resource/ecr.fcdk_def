@@ -9,7 +9,7 @@ ecr_from_resource {
     ecr_repo_arn = BuildParams.Root.EcrRepoARN = some:ARN:of:AWS
   }
 
-  default_input {
+  default_inputs {
     id_prefix = Root
     name_prefix = root
     class_prefix = null

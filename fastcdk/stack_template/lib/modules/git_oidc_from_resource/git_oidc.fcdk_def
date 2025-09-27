@@ -7,7 +7,7 @@ git_oidc_from_resource {
     open_id_connect_provider_arn = BuildParams.Root.OpenIdConnectProviderARN = myOpenIdConnectProviderARN
   }
 
-  default_input {
+  default_inputs {
     id_prefix = Root
     name_prefix = root
     class_prefix = null

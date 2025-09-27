@@ -8,7 +8,7 @@ hosted_zone {
     base_domain_name = BuildParams.Root.BaseDomainName = some:ARN:of:AWS
   }
 
-  default_input {
+  default_inputs {
     id_prefix = Root
     name_prefix = root
     class_prefix = null

@@ -1,7 +1,7 @@
 s3_based_cloudfront_git_oidc_role {
 
   template_file = por.s3cf.j2
-  path = s3based-cloudfront-frontend/por.s3cf.ts
+  default_path = s3based-cloudfront-frontend/por.s3cf.ts
 
   deps {
     git_oidc_from_resource
@@ -16,7 +16,7 @@ s3_based_cloudfront_git_oidc_role {
     git_repo_pull_branch_name = BuildParams.S3BasedCF.GitRepoPullBranchName = git-pull-branch-name
   }
 
-  default_input {
+  default_inputs {
     id_prefix = S3cf
     name_prefix = s3cf
     class_prefix = null

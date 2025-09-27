@@ -2,19 +2,19 @@
 import * as cdk from "aws-cdk-lib";
 
 // Config import
-import { EnvConfig } from "../../config/configSchema";
-import { DeploymentEnvEnum } from "../../mics/deploymentEnvEnum";
+import { EnvConfig } from "@base /config/configSchema";
+import { DeploymentEnvEnum } from "@base/mics/deploymentEnvEnum";
 
 // Root construct imports
 //
 {% for rc in root_constructs -%}
-import { {{rc.class}} } from "../{{rc.path}}";
+import { {{rc.class}} } from "@base/{{rc.path}}";
 {% endfor %}
 
 // This substack constructs imports
 //
 {% for sc in substack_constructs -%}
-import { {{sc.class}} } from "../{{sc.path}}";
+import { {{sc.class}} } from "@base/{{sc.path}}";
 {% endfor %}
 
 

@@ -8,14 +8,14 @@ import * as r53 from "aws-cdk-lib/aws-route53";
 import * as r53_targets from "aws-cdk-lib/aws-route53-targets"
 
 // Config import
-import { EnvConfig } from "../../config/configSchema";
-import { DeploymentEnvEnum } from "../../mics/deploymentEnvEnum";
+import { EnvConfig } from "@base/config/configSchema";
+import { DeploymentEnvEnum } from "@base/mics/deploymentEnvEnum";
 
 // Root imports
-import { {{hosted_zone.class}} } from "../{{hosted_zone.path}}";
+import { {{hosted_zone.class}} } from "@base/{{hosted_zone.path}}";
 
 // Local imports
-import { {{s3_bucket_for_cloudfront.class}} } from "../{{s3_bucket_for_cloudfront.path}}";
+import { {{s3_bucket_for_cloudfront.class}} } from "@base/{{s3_bucket_for_cloudfront.path}}";
 
 export class {{id_prefix}}{{class_prefix}}{{class_name}} {
   private readonly deploymentEnv: string;

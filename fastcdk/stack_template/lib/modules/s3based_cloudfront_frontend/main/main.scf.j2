@@ -3,17 +3,17 @@
 import * as cdk from "aws-cdk-lib";
 
 // Config import
-import { EnvConfig } from "../../config/configSchema";
-import { DeploymentEnvEnum } from "../../mics/deploymentEnvEnum";
+import { EnvConfig } from "@base/config/configSchema";
+import { DeploymentEnvEnum } from "@base/mics/deploymentEnvEnum";
 
 // Root imports
-import { {{main_hosted_zone.class}} } from "../{{main_hosted_zone.path}}";
-import { {{git_oidc_from_resource.class}} } from "../{{git_oidc_from_resource.path}}";
+import { {{main_hosted_zone.class}} } from "@base/{{main_hosted_zone.path}}";
+import { {{git_oidc_from_resource.class}} } from "@base/{{git_oidc_from_resource.path}}";
 
 // Local imports
-import { {{s3_bucket_for_cloudfront.class}} } from "../{{s3_bucket_for_cloudfront.path}}";
-import { {{s3_based_cloudfront.class}} } from "../{{s3_based_cloudfront.path}}";
-import { {{s3_based_cloudfront_git_oidc_role.class}} } from "../{{s3_based_cloudfront_git_oidc_role.path}}";
+import { {{s3_bucket_for_cloudfront.class}} } from "@base/{{s3_bucket_for_cloudfront.path}}";
+import { {{s3_based_cloudfront.class}} } from "@base/{{s3_based_cloudfront.path}}";
+import { {{s3_based_cloudfront_git_oidc_role.class}} } from "@base/{{s3_based_cloudfront_git_oidc_role.path}}";
 
 
 export class {{idPrefix}}{{classPrefix}}{{className}} {

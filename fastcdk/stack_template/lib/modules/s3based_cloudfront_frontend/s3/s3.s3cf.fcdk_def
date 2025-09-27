@@ -5,10 +5,10 @@ s3_bucket_for_cloudfront {
 
   env_vars {
     s3_bucket_name = BuildParams.S3BasedCF.S3BucketName = my-frontend-bucket
-    cloudfront_connection_secret = BuildParams.S3BasedCF.CloudFrontConnectionSecret
+    cloudfront_connection_secret = BuildParams.S3BasedCF.CloudFrontConnectionSecret = some-secret-string
   }
 
-  default_input {
+  default_inputs {
     id_prefix = S3cf
     name_prefix = s3cf
     class_prefix = null

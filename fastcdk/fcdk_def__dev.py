@@ -1,78 +1,20 @@
 from importlib.resources import files
 from pathlib import Path
 
-from jinja2 import StrictUndefined, Template
-from textx import metamodel_from_str
+from fastcdk.fcdk import Fcdk
+from fastcdk.fcdk_def import FcdkDef
+from fastcdk.fcdk_def_semantics import FcdkDefSemantics
+from fastcdk.graph_viz import InteractiveDAG
 
-fcdk_def_grammar_path = files("fastcdk.grammars") / "fcdk_def_grammar.tx"
-fcdk_def_grammar_text = fcdk_def_grammar_path.read_text()
-fcdk_def_mm = metamodel_from_str(fcdk_def_grammar_text, skipws=True)
+# fcdk_def_path = files("fastcdk.stack_template.lib.modules.s3based_cloudfront_frontend.cloudfront") / "cloudfront.s3cf.fcdk_def"
 
-fcdk_def_path = files("fastcdk.stack_template.lib.modules.cloudwatch_log") / "log.fcdk_def"
-fcdk_def_text = fcdk_def_path.read_text()
-
-program = fcdk_def_mm.model_from_str(fcdk_def_text)
-
-print(program.__dict__.keys())
-
-d = dict()
-
-d[program.name] = {
-  "template_file": program.template_file.val,
-  "default_path": program.default_path.val,
-  "deps": None,
-  "env_vars": None,
-  "default_inputs": None,
-}
-
-d[program.name]["default_inputs"] = {
-  "id_prefix": program.default_inputs_section.id_prefix.val,
-  "name_prefix": program.default_inputs_section.name_prefix.val,
-  "class_prefix": program.default_inputs_section.class_prefix.val,
-  "class_name": program.default_inputs_section.class_name.val,
-}
-
-fcdk_template_path = files("fastcdk.stack_template.lib.modules.cloudwatch_log") / "log.j2"
-fcdk_template_text = fcdk_template_path.read_text()
+# fcdk_def1 = FcdkDef(fcdk_def_path)
+# t_code = fcdk_def1.generate_code_from_template()
+# print(t_code)
 
 
-def make_dot_dict(d):
-  class DotDict(dict):
-    def __getattr__(self, key):
-      val = self.get(key)
-      return DotDict(val) if isinstance(val, dict) else val
-
-    def __setattr__(self, key, value):
-      self[key] = value
-
-    def __delattr__(self, key):
-      del self[key]
-
-  return DotDict(d)
-
-
-def make_j2_template_constructor(definition):
-  pass
-
-
-def make_j2_template_class(definition, is_constructor=False):
-  definition = make_dot_dict(definition)
-  data = {
-    "is_class_def": not is_constructor,
-    "is_constr_def": is_constructor,
-    "template_file": definition.template_file,
-    "default_path": definition.default_path,
-    **d[program.name]["default_inputs"],
-  }
-
-  j2_template = Template(fcdk_template_text, undefined=StrictUndefined)
-  return j2_template.render(make_dot_dict(data))
-
-
-# print(make_j2_template_class(d[program.name]))
-
-
-def list_files_by_depth(package_name: str):
+# Traverse the files("fastcdk.stack_template.lib) to find all the templates and defs
+def list_files_by_depth(package_name):
   root = files(package_name)
   collected: list[tuple[object, int, Path]] = []
 
@@ -93,6 +35,76 @@ def list_files_by_depth(package_name: str):
   return [(res, rel) for res, _, rel in collected]
 
 
-# example usage:
-for resource, rel in list_files_by_depth("fastcdk.stack_template.lib"):
-  print(f"{rel}" + " " + resource.name)  # e.g. Foo.txt, subdir/Bar.py, subdir/nested/Baz.json,
+cdk_project_files = list_files_by_depth("fastcdk.stack_template.lib")
+
+
+# # example usage:
+defs = []
+for resource, rel in cdk_project_files:
+  extension = Path(resource.name).suffix
+
+  if extension == ".fcdk_def" and resource.name != "substack.fcdk_def":
+    print(f"{rel} {resource.name} (extension: {extension})")
+    fcdk_def1 = FcdkDef(rel / resource)
+    defs.append(fcdk_def1)
+
+print("\n\nSemantics")
+sem = FcdkDefSemantics(defs)
+sem.make_global_dep_graph()
+
+#
+#
+# Add the examples for fcdk
+dsl_path = files("fastcdk.fastcdk_dsl_examples") / "network_example.fcdk"
+fcdk_loaded = Fcdk(dsl_path)
+sem.add_instances(fcdk_loaded.instances)
+
+print("\n\n")
+
+nodes = sem.global_dep_graph.get_nodes()
+edges = sem.global_dep_graph.get_edges()
+
+print("EDGES:")
+for e in edges:
+  print(e)
+
+# Create and visualize DAG
+dag = InteractiveDAG(nodes=nodes, edges=edges)
+dag.show()
+
+
+# print("CDK Project File Copy:")
+
+
+# import shutil
+# from importlib.resources import files, as_file
+
+# testing_ground_path = Path("~/code/fast_cdk/testing_ground")
+
+
+# def copy_resource_preserve_structure(resource, dest_root):
+#   dest_root = Path(dest_root).expanduser()
+
+#   # build the sub‑path under “stack_template”
+#   parts = []
+#   node = resource.parent
+#   while node.name != "stack_template":
+#     parts.insert(0, node.name)
+#     node = node.parent
+#   rel_path = Path(*parts) / resource.name  # e.g. bin/main.ts or bin/auth/main.ts
+
+#   # ensure destination directory exists
+#   dest_path = dest_root / rel_path
+#   dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+#   # copy the actual file
+#   with as_file(resource) as real_path:
+#     shutil.copy(real_path, dest_path)
+
+#   return dest_path
+
+
+# for resource in cdk_project_files:
+#   print(resource)  # prints the paths of the project files defined in cdk_project_files
+
+#   copy_resource_preserve_structure(resource, testing_ground_path)

@@ -1,53 +1,75 @@
-// -----------------------------------------------------------------------------
-// fastcdk_fcdk_grammar.tx
-// -----------------------------------------------------------------------------
-
-
-// top‐level model: zero or more definitions
 Model:
-    definitions*=Definition
+  instances*=Instance
 ;
 
-// each Definition binds a name to a resource‐type block
-Definition:
-    name=ID "="
-    type=ID
+Instance:
+    StackInstance
+  | SubstackInstance
+  | OtherInstances
+;
+
+StackInstance:
+  assigned_name=ID "=" "stack"
+  "{"
+      aws_account_id=AwsAccountId
+      aws_region=AwsRegion
+      aws_stack_name=AwsStackName
+      project=Project
+      exe_env=ExeEnv
+      
+      children*=Child
+  "}"
+;
+AwsAccountId: "aws_account_id" "=" val=AWSAccountIdForm;
+AwsRegion: "aws_region" "=" val=AWSRegionForm;
+AwsStackName: "aws_stack_name" "=" val=Value;
+Project: "project" "=" val=Value;
+ExeEnv: "exe_env" "=" val=Value;
+
+
+SubstackInstance:
+  assigned_name=ID "=" "substack"
+  "{"
+    id_prefix=IdPrefixAssign
+    name_prefix=NamePrefixAssign
+    class_prefix=ClassPrefixAssign
+    class_name=ClassNameAssign
+
+    children*=Child
+  "}"
+;
+IdPrefixAssign: "id_prefix" "=" val=Value;
+NamePrefixAssign: "name_prefix" "=" val=Value;
+ClassPrefixAssign: "class_prefix" "=" val=Value;
+ClassNameAssign: "class_name" "=" val=Value;
+
+
+Child: name=ID;
+
+
+OtherInstances:
+    assigned_name=ID "=" def_name=ID
     "{"
-      statements*=Statement
+      inputs*=InputAssign
     "}"
 ;
+InputAssign: key=ID "=" val=Value;
 
-// inside a block you can have either assignments or bare references
-Statement:
-      Assignment
-    | Reference
-;
 
-// key = value
-Assignment:
-    key=ID "=" value=Value
-;
 
-// just a name pointing to another Definition
-Reference:
-    ref=ID
-;
-
-// simple scalars or hyphenated tokens
+AWSAccountIdForm: /\d{12}/ ;
+AWSRegionForm: /(us|af|ap|ca|cn|eu|il|me|sa)(-[a-z]+)+-\d+/ ;
 Value:
-      BOOL
-    | FLOAT
+      FLOAT
     | INT
-    | PATH  // catches things like eu-west-1 or climbing-app-dev
+    | BOOL
+    | PATH
     | ID
+    | NULL
 ;
 
-// -------------------------------------------------------------------
-// terminals
-// -------------------------------------------------------------------
 BOOL:  "true" | "false" ;
-
-// PATH: letters, digits, underscore, dash, dot or slash
-PATH:  /[A-Za-z0-9_\-\.\/]+/ ;
+NULL:  "null" ;
+PATH: /[A-Za-z0-9_\-\.\/\\:]+/ ;
 
 Comment: /#[^\n]*/ ;
