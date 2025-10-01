@@ -9,9 +9,9 @@ s3_based_cloudfront {
       id_prefix = Root
       name_prefix = root
       class_name = HostedZone
-    }
+    } from root
 
-    s3_bucket_for_cloudfront
+    s3_bucket_for_cloudfront from s3_based_cloudfront_full_frontend
   }
 
   env_vars {

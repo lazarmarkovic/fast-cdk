@@ -4,12 +4,12 @@ s3_based_cloudfront_full_frontend {
   default_path = s3based-cloudfront-frontend/main.s3cf.ts
 
   deps {
-    main_hosted_zone
-    git_oidc_from_resource
+    main_hosted_zone from root
+    git_oidc_from_resource from root
 
-    s3_bucket_for_cloudfront
-    s3_based_cloudfront
-    s3_based_cloudfront_git_oidc_role
+    s3_bucket_for_cloudfront from this
+    s3_based_cloudfront from this
+    s3_based_cloudfront_git_oidc_role from this
   }
 
   env_vars {}

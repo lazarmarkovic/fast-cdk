@@ -41,7 +41,11 @@ OtherInstances:
       inputs*=InputAssign
     "}"
 ;
-InputAssign: key=ID "=" val=Value;
+InputAssign: KeyValInput | KeyRefValInput ;
+
+KeyValInput: key=ID "=" val=Value;
+KeyRefValInput: key=ID "=" ref=RefPath "=" val=PATH
+RefPath: parts+=ID["."]
 
 
 

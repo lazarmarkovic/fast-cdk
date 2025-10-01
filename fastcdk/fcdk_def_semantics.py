@@ -16,7 +16,8 @@ class GraphCycleError(Exception):
 
 # This class represents a directed acyclic graph (DAG) for managing dependencies between FCDK definitions.
 class GraphNode:
-  def __init__(self, definition, assigned_name=None, input_override=None, edges=None):
+  def __init__(self, definition, is_instance, assigned_name=None, input_override=None, edges=None):
+    self.is_instance = is_instance
     self.edges = []
     self.definition = definition
     self.assigned_name = assigned_name if assigned_name is not None else definition.name
@@ -33,8 +34,7 @@ class DirectedAcyclicGraph:
 
   def add_node(self, graph_node):
     if graph_node.assigned_name not in self.graph:
-      self.graph[graph_node.assigned_name] = graph_node
-      return 
+      self.graph[graph_node.assigned_name] = graph_node 
     else:
       raise NodeAlreadyExistsError(graph_node.assigned_name)
 
@@ -118,7 +118,7 @@ class FcdkDefSemantics:
 
     #### Level of fcdk_defs!
     for fcdk_def in self.definition_list:
-      new_node = GraphNode(fcdk_def)
+      new_node = GraphNode(fcdk_def, False)
       self.global_dep_graph.add_node(new_node)
       if len(fcdk_def.deps) > 0:
         nodes_with_deps.append(new_node)
@@ -134,7 +134,7 @@ class FcdkDefSemantics:
 
           print("Do it with: " +  dep.assigned_name)
           node_to_copy = self.global_dep_graph.get_node(dep.def_name)
-          new_node = GraphNode(node_to_copy.definition, dep.assigned_name, dep.input, node_to_copy.edges)
+          new_node = GraphNode(node_to_copy.definition, False, dep.assigned_name, dep.input, node_to_copy.edges)
           self.global_dep_graph.add_node(new_node)
 
 
@@ -157,7 +157,7 @@ class FcdkDefSemantics:
         else:
           pass
           # Not needed, it is handled above
-          # new_node = GraphNode(fcdk_def, dep.assigned_name, dep.input)
+          # new_node = GraphNode(fcdk_def, False, dep.assigned_name, dep.input)
           
 
 
@@ -182,7 +182,7 @@ class FcdkDefSemantics:
       node_to_copy = self.global_dep_graph.get_node(def_name)
       print("this one will be copied: " + node_to_copy.assigned_name)
       print("with new name: " + i.assigned_name)
-      new_node = GraphNode(node_to_copy.definition, i.assigned_name, i.inputs, node_to_copy.edges)
+      new_node = GraphNode(node_to_copy.definition, True, i.assigned_name, i.inputs, node_to_copy.edges)
       print("new node name: " + new_node.assigned_name)
       self.global_dep_graph.add_node(new_node)
 
@@ -190,7 +190,7 @@ class FcdkDefSemantics:
     for i in stacks:
       def_name = i.def_name
       node_to_copy = self.global_dep_graph.get_node(def_name)
-      new_node = GraphNode(node_to_copy.definition, i.assigned_name, i.inputs)
+      new_node = GraphNode(node_to_copy.definition, True, i.assigned_name, i.inputs)
       self.global_dep_graph.add_node(new_node)
       print("\n\nChildren:")
       for c in i.children:

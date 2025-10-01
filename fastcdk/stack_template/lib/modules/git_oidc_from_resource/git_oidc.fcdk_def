@@ -3,6 +3,8 @@ git_oidc_from_resource {
   template_file = git_oidc.j2
   default_path = root/git_oidc.root.ts
 
+  deps {}
+
   env_vars {
     open_id_connect_provider_arn = BuildParams.Root.OpenIdConnectProviderARN = myOpenIdConnectProviderARN
   }

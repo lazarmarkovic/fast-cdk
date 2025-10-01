@@ -1,5 +1,7 @@
 from importlib.resources import files
 from pathlib import Path
+import os
+from typing import Union
 
 from fastcdk.fcdk import Fcdk
 from fastcdk.fcdk_def import FcdkDef
@@ -55,7 +57,7 @@ sem.make_global_dep_graph()
 #
 #
 # Add the examples for fcdk
-dsl_path = files("fastcdk.fastcdk_dsl_examples") / "network_example.fcdk"
+dsl_path = files("fastcdk.fastcdk_dsl_examples") / "s3based_cf_ex.fcdk"
 fcdk_loaded = Fcdk(dsl_path)
 sem.add_instances(fcdk_loaded.instances)
 
@@ -73,38 +75,95 @@ dag = InteractiveDAG(nodes=nodes, edges=edges)
 dag.show()
 
 
-# print("CDK Project File Copy:")
+print("CDK Project File Copy:")
 
 
-# import shutil
-# from importlib.resources import files, as_file
-
-# testing_ground_path = Path("~/code/fast_cdk/testing_ground")
+import shutil
+from importlib.resources import files, as_file
 
 
-# def copy_resource_preserve_structure(resource, dest_root):
-#   dest_root = Path(dest_root).expanduser()
+def write_text_at_path(content: str, file_path: Union[str, Path], dest_root: Union[str, Path]) -> Path:
+    """
+    Create directories inside dest_root following file_path, then write `content` to that file.
+    `file_path` must be a *relative* path like 'bin/main.ts' or 'bin/auth/main.ts'.
+    Returns the absolute destination path.
+    """
+    dest_root = Path(dest_root).expanduser().resolve()
+    rel_path = Path(file_path)
 
-#   # build the sub‑path under “stack_template”
-#   parts = []
-#   node = resource.parent
-#   while node.name != "stack_template":
-#     parts.insert(0, node.name)
-#     node = node.parent
-#   rel_path = Path(*parts) / resource.name  # e.g. bin/main.ts or bin/auth/main.ts
+    if rel_path.is_absolute():
+        raise ValueError(f"file_path must be relative, got: {rel_path}")
 
-#   # ensure destination directory exists
-#   dest_path = dest_root / rel_path
-#   dest_path.parent.mkdir(parents=True, exist_ok=True)
+    dest_path = (dest_root / rel_path).resolve()
 
-#   # copy the actual file
-#   with as_file(resource) as real_path:
-#     shutil.copy(real_path, dest_path)
+    # prevent '..' escape outside dest_root
+    if not str(dest_path).startswith(str(dest_root) + str(os.sep)):
+        raise ValueError(f"refusing to write outside dest_root: {dest_path}")
 
-#   return dest_path
+    dest_path.parent.mkdir(parents=True, exist_ok=True)
+    dest_path.write_text(content, encoding="utf-8")
+    return dest_path
 
 
-# for resource in cdk_project_files:
-#   print(resource)  # prints the paths of the project files defined in cdk_project_files
+def copy_resource_preserve_structure(resource, dest_root):
+  dest_root = Path(dest_root).expanduser()
+  # build the sub‑path under “stack_template”
+  parts = []
+  node = resource.parent
+  while node.name != "stack_template":
+    parts.insert(0, node.name)
+    node = node.parent
+  rel_path = Path(*parts) / resource.name  # e.g. bin/main.ts or bin/auth/main.ts
 
-#   copy_resource_preserve_structure(resource, testing_ground_path)
+  # ensure destination directory exists
+  dest_path = dest_root / rel_path
+  dest_path.parent.mkdir(parents=True, exist_ok=True)
+
+  # copy the actual file
+  with as_file(resource) as real_path:
+    shutil.copy(real_path, dest_path)
+
+  return dest_path
+  
+
+
+# 1 Copy the root of the project
+IGNORE_NAMES = {".DS_Store", "Thumbs.db", "__pycache__"}
+IGNORE_SUFFIXES = {".pyc", ".pyo", ".log"}
+IGNORE_REL_ROOTS = {"lib", "env-config", "config"}
+cdk_base_project = list_files_by_depth("fastcdk.stack_template")
+for resource, rel in cdk_base_project:
+  if resource.name in IGNORE_NAMES:
+    continue
+  if Path(resource.name).suffix in IGNORE_SUFFIXES:
+    continue
+  if rel.parts and rel.parts[0] in IGNORE_REL_ROOTS:
+    continue
+
+  print(rel)
+  
+  print(resource)  # prints the paths of the project files defined in cdk_project_files
+
+  testing_ground_path = Path("~/code/fast_cdk/testing_ground")
+  copy_resource_preserve_structure(resource, testing_ground_path)
+
+
+# 2 Use graph to generate the modules
+print("\n\n")
+
+project_base_lib_path = Path("~/code/fast_cdk/testing_ground/lib")
+node_keys = sem.global_dep_graph.get_nodes()
+
+stack_root_node = None
+for nk in node_keys:
+  n = sem.global_dep_graph.get_node(nk)
+  if n.is_instance and n.definition.name == "stack":
+    stack_root_node = n
+    
+print(stack_root_node.assigned_name + " - " + stack_root_node.definition.name)
+
+for ek in stack_root_node.edges:
+  print(ek)
+  edge = sem.global_dep_graph.get_node(ek)
+  t_code = edge.definition.generate_code_from_template(edge.input_override)
+  write_text_at_path(t_code, edge.definition.default_path, project_base_lib_path)

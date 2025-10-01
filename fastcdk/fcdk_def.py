@@ -2,7 +2,7 @@ from importlib.abc import Traversable
 from importlib.resources import files
 from pathlib import Path
 
-from jinja2 import StrictUndefined, Template
+from jinja2 import StrictUndefined, Template, Environment, FileSystemLoader
 from textx import metamodel_from_str
 
 
@@ -34,8 +34,9 @@ class DefaultInputsSection(InputObject):
 
 
 class DepEntry:
-  def __init__(self, def_name, assigned_name=None):
+  def __init__(self, def_name, source, assigned_name=None):
     self.def_name = def_name
+    self.source = source
     self.assigned_name = assigned_name if assigned_name is not None else def_name
     self.input = InputObject()
 
@@ -93,9 +94,9 @@ class FcdkDef:
   def load_deps(self):
     if self.model.deps is not None:
       for dep in self.model.deps.entries:
-        print(f"Loading Dep: dep_name:{dep.type} ass_name:{dep.key}")
+        print(f"Loading Dep: dep_name:{dep.type}; ass_name:{dep.key}; from:{dep.source}")
         #print(f"Dep Name: {dep.key if hasattr(dep, 'key') else dep.type}")
-        dep_entry = DepEntry(dep.type, dep.key) if dep.key != "" else DepEntry(dep.type)
+        dep_entry = DepEntry(dep.type, dep.source, dep.key) if dep.key != "" else DepEntry(dep.type, dep.source)
         #print("Result:" + dep_entry.def_name + " " + dep_entry.assigned_name)
         if hasattr(dep, "props"):
           for inp in dep.props:
@@ -109,8 +110,12 @@ class FcdkDef:
         env_var_entry = EnvVarsEntry(env_var.key, env_var.ref, env_var.val)
         self.env_vars.append(env_var_entry)
 
+    # Make env_vars a dict for easier access
+    self.env_vars_ref_dict = {var.name: ".".join(var.config_var.parts) for var in self.env_vars}
+    self.env_vars_val_dict = {var.name: var.value for var in self.env_vars}
 
-  def make_render_dict(self, is_constructor: bool = False) -> dict:
+
+  def make_render_dict(self, input_override_obj, is_constructor: bool = False) -> dict:
     return {
       "is_class_def": not is_constructor,
       "is_constr_def": is_constructor,
@@ -118,12 +123,21 @@ class FcdkDef:
       "template_file": self.template_file,
       "default_path": self.default_path,
       **self.default_inputs.get_dict(),
+      **self.env_vars_ref_dict,
+      **input_override_obj.get_dict()
     }
 
 
-  def generate_code_from_template(self, is_constructor: bool = False) -> str:
-    template_path = self.fcdk_def_path.parent / self.template_file
-    template_text = template_path.read_text()
-    template = Template(template_text, undefined=StrictUndefined)
-    return template.render(self.make_render_dict(is_constructor))
+  def generate_code_from_template(self, input_override_obj, is_constructor: bool = False) -> str:
+    template_path = (self.fcdk_def_path.parent / self.template_file).resolve()
+    jinja2_env = Environment(
+        loader=FileSystemLoader(str(template_path.parent)),
+        trim_blocks=False,
+        lstrip_blocks=True,
+        undefined=StrictUndefined,  # raise if a var is missing
+    )
+    template = jinja2_env.get_template(template_path.name)
+    ctx = self.make_render_dict(input_override_obj, is_constructor)
+    return template.render(ctx)
+
 

@@ -4,10 +4,12 @@ s3_based_cloudfront_git_oidc_role {
   default_path = s3based-cloudfront-frontend/por.s3cf.ts
 
   deps {
-    git_oidc_from_resource
-    s3_based_cloudfront
-    main_hosted_zone
-    s3_bucket_for_cloudfront # u koliko koristi isti naziv uzima referencu na postojeci ne pravi novi osim ako nije napravljen sa "custom_name = meta_tempalte oblikom"
+    git_oidc_from_resource from root
+
+    s3_based_cloudfront from s3_based_cloudfront_full_frontend
+
+    # u koliko koristi isti naziv uzima referencu na postojeci ne pravi novi osim ako nije napravljen sa "custom_name = meta_tempalte oblikom"
+    s3_bucket_for_cloudfront from s3_based_cloudfront_full_frontend
   }
 
   env_vars {

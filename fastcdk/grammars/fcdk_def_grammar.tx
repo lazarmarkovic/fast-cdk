@@ -32,8 +32,8 @@ DepsSection:
 // | type=ID       [ "{" props+=InputAssign* "}" ]        // unnamed, opt-block
 // -----------------------------------------------------------------------------
 DepEntry:
-      key=ID "=" type=ID ( "{" props+=InputAssign "}" )?
-    |               type=ID ( "{" props+=InputAssign "}" )?
+      key=ID "=" type=ID ( "{" props+=InputAssign "}" )? "from" source=ID
+    |               type=ID ( "{" props+=InputAssign "}" )? "from" source=ID
 ;
 
 

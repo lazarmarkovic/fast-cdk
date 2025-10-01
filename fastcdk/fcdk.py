@@ -20,6 +20,7 @@ class InputObject(CustomBaseObj):
 
   def add_input(self, input_name, input_value):
     setattr(self, input_name, input_value)
+    
 
 class StackInstanceInputs(CustomBaseObj):
   def __init__(self, assigned_name, def_name, iobj):
