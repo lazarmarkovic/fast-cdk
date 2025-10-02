@@ -3,7 +3,7 @@ from pathlib import Path
 
 from fastcdk.fcdk_def import FcdkDef
 from fastcdk.fcdk_def_semantics import FcdkDefSemantics
-from fastcdk.graph_viz import InteractiveDAG
+from fastcdk.junk.graph_viz import InteractiveDAG
 
 
 def list_files_by_depth(package_name):

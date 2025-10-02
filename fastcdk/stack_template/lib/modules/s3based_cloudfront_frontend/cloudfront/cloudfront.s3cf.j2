@@ -12,7 +12,7 @@ import { EnvConfig } from "@base/config/configSchema";
 import { DeploymentEnvEnum } from "@base/mics/deploymentEnvEnum";
 
 // Root imports
-import { {{hosted_zone.class}} } from "@base/{{hosted_zone.path}}";
+import { {{main_hosted_zone.class}} } from "@base/{{main_hosted_zone.path}}";
 
 // Local imports
 import { {{s3_bucket_for_cloudfront.class}} } from "@base/{{s3_bucket_for_cloudfront.path}}";
@@ -27,7 +27,7 @@ export class {{id_prefix}}{{class_prefix}}{{class_name}} {
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
-    hostedZone: {{hosted_zone.class}},
+    hostedZone: {{main_hosted_zone.class}},
     s3: {{s3_bucket_for_cloudfront.class}},
   ) {
     let mainDomainNames = [envConfig.{{domain_name}}];
@@ -79,7 +79,7 @@ export class {{id_prefix}}{{class_prefix}}{{class_name}} {
   mainStack, 
   envConfig,
 
-  this.{{hosted_zone.instance_name}},
+  this.{{main_hosted_zone.instance_name}},
   this.{{s3_bucket_for_cloudfront.instance_name}},
 );
 {% endif %}

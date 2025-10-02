@@ -6,7 +6,7 @@ from typing import Union
 from fastcdk.fcdk import Fcdk
 from fastcdk.fcdk_def import FcdkDef
 from fastcdk.fcdk_def_semantics import FcdkDefSemantics
-from fastcdk.graph_viz import InteractiveDAG
+from fastcdk.junk.graph_viz import InteractiveDAG
 
 # fcdk_def_path = files("fastcdk.stack_template.lib.modules.s3based_cloudfront_frontend.cloudfront") / "cloudfront.s3cf.fcdk_def"
 

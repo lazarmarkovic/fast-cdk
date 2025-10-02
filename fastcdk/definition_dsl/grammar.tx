@@ -1,0 +1,136 @@
+//////////////////////////////////
+/////////////// Definition Grammar
+Fcdk:
+    fcdk = Definitions
+  | fcdk = Instances
+;
+
+Definitions: 
+  definitions*=Definition
+;
+
+Definition:
+  name=ID "{"
+    template_file=TemplateFileAssign
+    default_path=DefaultPathAssign
+    deps=DepsSection?
+    env_vars=EnvVarsSection?
+    default_inputs=DefaultInputsSection
+  "}"
+;
+
+TemplateFileAssign: "template_file" "=" val=PATH ;  
+DefaultPathAssign: "default_path" "=" val=PATH ;
+
+DepsSection:
+  "deps" "{"
+    entries*=DepEntry
+  "}"
+;
+
+DepEntry:
+    assigned_name=ID "=" def_name=ID ( "{" props+=DepEntryInputAssign "}" )? "from" source_assigned_name=ID
+  | assigned_name=ID "from" source_assigned_name=ID
+;
+DepEntryInputAssign: 
+    key=ID "=" ref=RefPath
+  | key=ID "=" val=Value 
+;
+
+EnvVarsSection:
+  "env_vars" "{"
+    entries*=EnvVar
+  "}"
+;
+
+EnvVar: key=ID "=" ref=RefPath "=" val=PATH ;
+RefPath: first=ID "." rest+=ID["."] ;
+
+DefaultInputsSection:
+  "default_inputs" "{"
+    id_prefix=IdPrefixAssign
+    name_prefix=NamePrefixAssign
+    class_prefix=ClassPrefixAssign
+    class_name=ClassNameAssign
+
+    inputs*=DefaultInputsInputAssign
+  "}"
+;
+DefaultInputsInputAssign: 
+  key=ID "=" val=Value 
+;
+
+IdPrefixAssign: "id_prefix" "=" val=Value ;
+NamePrefixAssign: "name_prefix" "=" val=Value ;
+ClassPrefixAssign: "class_prefix" "=" val=Value ;
+ClassNameAssign: "class_name" "=" val=Value ;
+
+
+
+
+
+////////////////////////////////
+/////////////// Instance Grammar
+Instances:
+    instances*=Instance
+;
+
+Instance:
+  stack_instance=StackInstance
+  other_instances*=OtherInstances
+;
+
+StackInstance:
+  stack_name=ID "=" "stack"
+  "{"
+      aws_account_id=AwsAccountId
+      aws_region=AwsRegion
+      aws_stack_name=AwsStackName
+      project=Project
+      exe_env=ExeEnv
+      
+      children*=Child
+  "}"
+;
+Child: name=ID ;
+
+AwsAccountId: "aws_account_id" "=" val=AWSAccountIdForm ;
+AwsRegion: "aws_region" "=" val=AWSRegionForm ;
+AwsStackName: "aws_stack_name" "=" val=Value ;
+Project: "project" "=" val=Value ;
+ExeEnv: "exe_env" "=" val=Value ;
+
+
+IdPrefixAssign: "id_prefix" "=" val=Value ;
+NamePrefixAssign: "name_prefix" "=" val=Value ;
+ClassPrefixAssign: "class_prefix" "=" val=Value ;
+ClassNameAssign: "class_name" "=" val=Value ;
+
+OtherInstances:
+  assigned_name=ID "=" def_name=ID
+  "{"
+    inputs*=DepEntryInputAssign
+    dep_overrides*=DepOverride
+  "}"
+;
+DepOverride: name=ID ;
+
+
+////////////////////////////////
+/////////////// Common matchings
+AWSAccountIdForm: /\d{12}/ ;
+AWSRegionForm: /(us|af|ap|ca|cn|eu|il|me|sa)(-[a-z]+)+-\d+/ ;
+PATH: /[A-Za-z0-9_\-\.\/\\:]+/ ;
+Value:
+      FLOAT
+    | INT
+    | BOOL
+    | PATH
+    | ID
+    | NULL
+;
+
+BOOL:  "true" | "false" ;
+NULL:  "null" ;
+
+Comment: /#[^\n]*/ ;

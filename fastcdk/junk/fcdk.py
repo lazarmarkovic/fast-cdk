@@ -20,7 +20,7 @@ class InputObject(CustomBaseObj):
 
   def add_input(self, input_name, input_value):
     setattr(self, input_name, input_value)
-    
+
 
 class StackInstanceInputs(CustomBaseObj):
   def __init__(self, assigned_name, def_name, iobj):
@@ -42,26 +42,28 @@ class OtherInstanceInputs(CustomBaseObj):
     self.inputs = iobj
 
 
-class Fcdk:
-  def __init__(
-    self,
-    fcdk_path: Path | Traversable,
-  ):
+class ModelParser:
+  def __init__(self, fcdk_path: Path | Traversable):
+    self.fcdk_path = None
+    self.metamodel = None
+    self.model = None
+
     self.load_fcdk(fcdk_path)
   
   def kind(self, x): return x.__class__.__name__
 
-  def load_fcdk(self, fcdk_path: Path | Traversable) -> None:
+
+  def load_fcdk_metamodel(self) -> None:
     fcdk_grammar_path = files("fastcdk.grammars") / "fcdk_grammar.tx"
     fcdk_grammar_text = fcdk_grammar_path.read_text()
+    self.metamodel = metamodel_from_str(fcdk_grammar_text, skipws=True)
 
-    fcdk_mm = metamodel_from_str(fcdk_grammar_text, skipws=True)
 
+  def load_text_file(self, fcdk_path: Path | Traversable) -> None:
     self.fcdk_path = fcdk_path
     fcdk_text = fcdk_path.read_text()
-    self.model = fcdk_mm.model_from_str(fcdk_text)
-
-    
+    self.model = self.metamodel.model_from_str(fcdk_text)
+    print(f"Loaded FCDK file: {fcdk_path}")
 
     self.instances = []
     for i in self.model.instances:
