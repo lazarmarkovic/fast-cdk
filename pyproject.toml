@@ -68,7 +68,7 @@ test = [
 
 
 [tool.ruff]
-line-length = 133
+line-length = 250
 indent-width = 2
 
 [tool.ruff.lint]
