@@ -1,12 +1,17 @@
-from fastcdk.data_structure.graph import GraphNode, NodeNotFoundError, NodeType
+from textx import get_location
+from textx.exceptions import TextXSemanticError
+
+from fastcdk.data_structure.errors import NodeAlreadyExistsError
+from fastcdk.data_structure.graph import DirectedAcyclicGraph, GraphNode, NodeNotFoundError, NodeType
 from fastcdk.definition_dsl.class_model import deep_copy_def
 from fastcdk.junk.graph_viz import InteractiveDAG
 
 
 class GraphSemanticProcessor:
-  def __init__(self, graph):
-    self.graph = graph
-    pass
+  def __init__(self, definitions, instances):
+    self.graph = DirectedAcyclicGraph()
+    self.definitions = definitions
+    self.instances = instances
 
 
   def visualize(self):
@@ -22,7 +27,18 @@ class GraphSemanticProcessor:
     dag.show()
 
 
-  def make_global_dep_graph(self):
+  def add_definitions(self):
+    # Add definitions as pure nodes first
+    print("Add Definitions")
+    for definition in self.definitions:
+      print("Definition name: " + definition.semantic_data.name)
+
+      try:
+        new_node = GraphNode(definition.semantic_data, NodeType.DEFINITION)
+        self.graph.add_node(new_node)
+      except NodeAlreadyExistsError as err:
+        raise TextXSemanticError(f"Definition with name '{definition.semantic_data.name}' already exists.", **get_location(definition)) from err
+
     # Make all nodes with custom assigned_name / "instances of defs"
     for node_name in self.graph.get_nodes():
       node = self.graph.get_node(node_name)
@@ -41,7 +57,6 @@ class GraphSemanticProcessor:
 
             new_node = GraphNode(def_deep_copy, NodeType.DEFINITION, assigned_name=dep.assigned_name, edges=node_to_copy.edges)
             self.graph.add_node(new_node)
-
 
     # Now add assigned nodes and edges
     for node_name in self.graph.get_nodes():
@@ -66,3 +81,50 @@ class GraphSemanticProcessor:
             pass
             # Not needed, it is handled above
             # new_node = GraphNode(fcdk_def, False, dep.assigned_name, dep.input)
+    
+    print("All Definition(s) processed\n")
+
+
+  def add_instances(self):
+    print("\n\n")
+    print("Add Instances")
+    for instance in self.instances:
+      print("Instance name: " + instance.semantic_data.stack_instance.stack_name)
+
+      # Find all dep override indicators
+      dep_overrides = set()
+      for oi in instance.semantic_data.other_instances.table:
+        oi_obj = instance.semantic_data.other_instances.table[oi]
+        for dov in oi_obj.dep_overrides:
+          dep_overrides.add(dov)
+          print("-------" + dov)
+
+      # Check if all dep overrides exist in instances
+      for dep in dep_overrides:
+        if dep not in instance.semantic_data.other_instances.table:
+          raise TextXSemanticError(f"Instance for ependancy override '{dep}' not found.", **get_location(instance))
+        
+
+      for oi_key in [*instance.semantic_data.stack_instance.children, *dep_overrides]:
+        if oi_key not in instance.semantic_data.other_instances.table:
+          raise TextXSemanticError(f"Stack instsnce with name '{oi_key}' is not defined.", **get_location(instance))
+        
+        oi = instance.semantic_data.other_instances.table[oi_key]
+
+        # Find required definition to be used
+        node_to_copy = self.graph.get_node(oi.def_name)
+        if node_to_copy is None:
+          raise TextXSemanticError(f"Definition '{oi.def_name}' for instance named '{oi_key}' not found.", **get_location(instance))
+        
+        # Make deep copy of definition
+        def_deep_copy = deep_copy_def(node_to_copy.definition)
+        oi.apply_to(def_deep_copy)
+
+        # Make new node with deeo copy
+        new_node = GraphNode(def_deep_copy, NodeType.INSTANCE, assigned_name=oi.assigned_name, edges=node_to_copy.edges)
+        self.graph.add_node(new_node)
+
+    print("All Instance(s) processed\n")
+
+
+    >>>> TODO: Handle dep_overrides

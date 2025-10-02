@@ -17,11 +17,6 @@ s3_cf = s3_based_cloudfront_full_frontend {
 
 
 mhz1 = main_hosted_zone {
-  default_path = root/hosted-zone-1.root.ts
+  path = /root
   base_domain_name = BuildParams.Root.BaseDomainName1
-}
-
-mhz2 = main_hosted_zone {
-  default_path = root/hosted-zone-2.root.ts
-  base_domain_name = BuildParams.Root.BaseDomainName2
 }

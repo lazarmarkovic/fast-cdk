@@ -10,6 +10,15 @@ Value = Union[str, int, float, bool, None]
 ##########################
 ###### Definition class model
 @dataclass
+class TemplateMapSem:
+  # map "template.j2" -> "generated.ts" (both as dotted strings from RefPath)
+  table: Mapping[str, str] = field(default_factory=dict)
+
+  def to_dict(self) -> Dict[str, str]:
+    return dict(self.table)
+  
+
+@dataclass
 class EnvVarSem:
   name: str
   path_joined: str
@@ -35,6 +44,7 @@ class EnvVarsSem:
 
 @dataclass
 class DefaultInputsSem:
+  path: str
   id_prefix: str
   name_prefix: str
   class_prefix: str
@@ -43,6 +53,7 @@ class DefaultInputsSem:
 
   def to_dict(self) -> Dict[str, Value]:
     base: Dict[str, Value] = {
+      "path": self.path,
       "id_prefix": self.id_prefix,
       "name_prefix": self.name_prefix,
       "class_prefix": self.class_prefix,
@@ -56,20 +67,20 @@ class DefaultInputsSem:
 class DepSem:
   assigned_name: str
   def_name: str
-  source_assigned_name: str
   props: Mapping[str, Value | EnvVarsSem] = field(default_factory=dict)
 
   def to_dict(self) -> Dict[str, Any]:
     return {
       "assigned_name": self.assigned_name,
       "def_name": self.def_name,
-      "source_assigned_name": self.source_assigned_name,
       "props": dict(self.props),
     }
   
   def apply_to(self, definition: DefSem):
     for p in self.props:
       match p:
+        case "path":
+          definition.default_inputs.path = self.props[p]
         case "id_prefix":
           definition.default_inputs.id_prefix = self.props[p]
         case "name_prefix":
@@ -78,10 +89,6 @@ class DepSem:
           definition.default_inputs.class_prefix = self.props[p]
         case "class_name":
           definition.default_inputs.class_name = self.props[p]
-        case "template_file":
-          definition.template_file = self.props[p]
-        case "default_path":
-          definition.default_path = self.props[p]
         case _:
           if p in definition.env_vars.table and isinstance(self.props[p], EnvVarsSem):
               definition.env_vars.table[p].path_joined = self.props[p].path_joined
@@ -104,8 +111,7 @@ class DepsSem:
 @dataclass
 class DefSem:
   name: str
-  template_file: str
-  default_path: str
+  templates: TemplateMapSem  
   deps: DepsSem
   env_vars: EnvVarsSem
   default_inputs: DefaultInputsSem
@@ -113,8 +119,7 @@ class DefSem:
   def to_dict(self) -> Dict[str, Any]:
     return {
       "name": self.name,
-      "template_file": self.template_file,
-      "default_path": self.default_path,
+      "templates": self.templates.to_dict(),
       "deps": self.deps.to_dict(),
       "env_vars": self.env_vars.to_dict(),
       "default_inputs": self.default_inputs.to_dict(),
@@ -242,6 +247,7 @@ def _deep_copy_envvars(evs: EnvVarsSem) -> EnvVarsSem:
 
 def _deep_copy_default_inputs(di: DefaultInputsSem) -> DefaultInputsSem:
   return DefaultInputsSem(
+    path=di.path,
     id_prefix=di.id_prefix,
     name_prefix=di.name_prefix,
     class_prefix=di.class_prefix,
@@ -264,7 +270,6 @@ def _deep_copy_dep(dep: DepSem) -> DepSem:
   return DepSem(
     assigned_name=dep.assigned_name,
     def_name=dep.def_name,
-    source_assigned_name=dep.source_assigned_name,
     props=new_props,
   )
 
@@ -273,12 +278,14 @@ def _deep_copy_deps(deps: DepsSem) -> DepsSem:
   new_table: Dict[str, DepSem] = {k: _deep_copy_dep(v) for k, v in deps.table.items()}
   return DepsSem(table=new_table)
 
+def _deep_copy_templates(tm: TemplateMapSem) -> TemplateMapSem:
+  return TemplateMapSem(table=dict(tm.table))
+
 
 def deep_copy_def(defn: DefSem) -> DefSem:
   return DefSem(
     name=defn.name,
-    template_file=defn.template_file,
-    default_path=defn.default_path,
+    templates=_deep_copy_templates(defn.templates),
     deps=_deep_copy_deps(defn.deps),
     env_vars=_deep_copy_envvars(defn.env_vars),
     default_inputs=_deep_copy_default_inputs(defn.default_inputs),

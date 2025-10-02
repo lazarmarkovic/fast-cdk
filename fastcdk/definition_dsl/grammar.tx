@@ -11,26 +11,28 @@ Definitions:
 
 Definition:
   name=ID "{"
-    template_file=TemplateFileAssign
-    default_path=DefaultPathAssign
+    template_map=TemplateMapSection
     deps=DepsSection?
     env_vars=EnvVarsSection?
     default_inputs=DefaultInputsSection
   "}"
 ;
+TemplateMapSection:
+  "templates" "{" 
+    entries*=TemplateMapEntry
+  "}"
+;
+TemplateMapEntry: template_file=FileName "=" generated_file=FileName ;  
 
-TemplateFileAssign: "template_file" "=" val=PATH ;  
-DefaultPathAssign: "default_path" "=" val=PATH ;
 
 DepsSection:
   "deps" "{"
     entries*=DepEntry
   "}"
 ;
-
 DepEntry:
-    assigned_name=ID "=" def_name=ID ( "{" props+=DepEntryInputAssign "}" )? "from" source_assigned_name=ID
-  | assigned_name=ID "from" source_assigned_name=ID
+    assigned_name=ID "=" def_name=ID ( "{" props+=DepEntryInputAssign "}" )?
+  | assigned_name=ID
 ;
 DepEntryInputAssign: 
     key=ID "=" ref=RefPath
@@ -48,6 +50,7 @@ RefPath: first=ID "." rest+=ID["."] ;
 
 DefaultInputsSection:
   "default_inputs" "{"
+    path=PathAssign
     id_prefix=IdPrefixAssign
     name_prefix=NamePrefixAssign
     class_prefix=ClassPrefixAssign
@@ -60,6 +63,7 @@ DefaultInputsInputAssign:
   key=ID "=" val=Value 
 ;
 
+PathAssign: "path" "=" val=PATH ;
 IdPrefixAssign: "id_prefix" "=" val=Value ;
 NamePrefixAssign: "name_prefix" "=" val=Value ;
 ClassPrefixAssign: "class_prefix" "=" val=Value ;
@@ -120,6 +124,7 @@ DepOverride: name=ID ;
 /////////////// Common matchings
 AWSAccountIdForm: /\d{12}/ ;
 AWSRegionForm: /(us|af|ap|ca|cn|eu|il|me|sa)(-[a-z]+)+-\d+/ ;
+FileName: /[\w-]+(\.[\w-]+)+/ ;
 PATH: /[A-Za-z0-9_\-\.\/\\:]+/ ;
 Value:
       FLOAT

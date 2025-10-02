@@ -1,19 +1,22 @@
 stack {
-  template_file = stack.template
-  default_path = stack.ts
+
+  templates {
+    stack.j2 = stack.ts
+  }
 
   deps {}
 
   env_vars {
-    aws_stack_name = BuildParams.Root.AwsStackName =ExampleStack
-    aws_account_id = BuildParams.Root.AwsAccountId = 111111111
-    aws_region = BuildParams.Root.AwsRegion = eu-west-1
-    exe_env = BuildParams.Root.ExeEnv = staging
-    project_name = BuildParams.Root.ProjectName = climbing-app
+    aws_stack_name  = BuildParams.Root.AwsStackName =ExampleStack
+    aws_account_id  = BuildParams.Root.AwsAccountId = 111111111
+    aws_region      = BuildParams.Root.AwsRegion = eu-west-1
+    exe_env         = BuildParams.Root.ExeEnv = staging
+    project_name    = BuildParams.Root.ProjectName = climbing-app
   }
 
 
   default_inputs {
+    path = /
     id_prefix = null
     name_prefix = null
     class_prefix = null

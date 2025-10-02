@@ -1,6 +1,8 @@
 hosted_zone {
-  template_file = hosted_zone.j2
-  default_path = root/hosted-zone.root.ts
+
+  templates {
+    hosted_zone.j2 = hosted-zone.root.ts
+  }
 
   deps {}
 
@@ -9,6 +11,7 @@ hosted_zone {
   }
 
   default_inputs {
+    path = /
     id_prefix = Root
     name_prefix = root
     class_prefix = null
