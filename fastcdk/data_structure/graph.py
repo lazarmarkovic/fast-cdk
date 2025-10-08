@@ -30,7 +30,7 @@ class DirectedAcyclicGraph:
 
   def add_node(self, graph_node):
     if graph_node.assigned_name not in self.graph:
-      self.graph[graph_node.assigned_name] = graph_node 
+      self.graph[graph_node.assigned_name] = graph_node
     else:
       raise NodeAlreadyExistsError(graph_node.assigned_name)
 
@@ -87,3 +87,19 @@ class DirectedAcyclicGraph:
       return self.graph[node_name]
     else:
       return None
+
+
+  def replace_edge(self, from_node_name: str, old_to_node_name: str, new_to_node_name: str):
+    if not self.node_exists(from_node_name):
+      raise NodeNotFoundError(from_node_name)
+    if not self.node_exists(old_to_node_name):
+      raise NodeNotFoundError(old_to_node_name)
+    if not self.node_exists(new_to_node_name):
+      raise NodeNotFoundError(new_to_node_name)
+
+    from_node = self.graph[from_node_name]
+    if old_to_node_name in from_node.edges:
+      from_node.edges.remove(old_to_node_name)
+      from_node.edges.append(new_to_node_name)
+    else:
+      raise NodeNotFoundError(f"Edge from {from_node_name} to {old_to_node_name} does not exist.")

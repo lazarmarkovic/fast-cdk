@@ -22,17 +22,19 @@ print("End parsing definitions\n\n")
 
 
 #####
-print("\n\n--- Parsing instances ---\n")
+print("\n--- Parsing instances ---")
+#dsl_path = files("fastcdk.dsl_examples") / "s3based_cf_ex.fcdk"
 dsl_path = files("fastcdk.dsl_examples") / "s3based_cf_ex.fcdk"
 full_resolved_path = dsl_path.resolve()
 print("Full path: " + str(full_resolved_path))
 fcdk_text = full_resolved_path.read_text()
 model = metamodel.model_from_str(fcdk_text)
-print("End instances definitions\n\n")
+print("End parsing instances\n\n")
 
 
-
-print("Test graph creation for definitions")
-gsp = GraphSemanticProcessor(semantic_processor.definitions, semantic_processor.instances)
-gsp.add_definitions()
-gsp.visualize()
+print("Number of instances: " + str(len(semantic_processor.instances)))
+for i in semantic_processor.instances:
+  gsp = GraphSemanticProcessor(semantic_processor.definitions, i.semantic_data.stack_instance, i.semantic_data.other_instances)
+  gsp.add_definitions()
+  gsp.add_instances()
+  gsp.visualize()

@@ -159,6 +159,13 @@ class SemanticProcessors:
 
 
   def stack_instance(self, entity):
+    # Validate children
+    child_names = set()
+    for c in entity.children:
+      if c.name in child_names:
+        raise TextXSemanticError(f"Duplicate child instance name '{c.name}' in stack_instance section.", **get_location(c))
+      child_names.add(c.name)
+
     entity.semantic_data = StackInstanceSem(
       stack_name=entity.stack_name,
       aws_account_id=entity.aws_account_id.val,
@@ -166,7 +173,7 @@ class SemanticProcessors:
       aws_stack_name=entity.aws_stack_name.val,
       project=entity.project.val,
       exe_env=entity.exe_env.val,
-      children=tuple(c.name for c in entity.children)
+      children=tuple(child_names)
     )
 
 
@@ -195,14 +202,3 @@ class SemanticProcessors:
     self.definitions.extend(new_definitions)
     self.instances.extend(new_instances)
 
-    
-      
-
-    
-      
-
-
-
-
-
- 

@@ -8,15 +8,33 @@ climbing_app = stack {
   exe_env = staging
 
   s3_cf
+  s3_cf2
+
+  network_1
 }
 
 
 s3_cf = s3_based_cloudfront_full_frontend {
   mhz1
+  main_git_oidc_from_resource
+}
+
+s3_cf2 = s3_based_cloudfront_full_frontend {
+  mhz1
+  main_git_oidc_from_resource
 }
 
 
 mhz1 = main_hosted_zone {
   path = /root
   base_domain_name = BuildParams.Root.BaseDomainName1
+}
+
+main_git_oidc_from_resource = git_oidc_from_resource {
+  path = /s3based-cloudfront-frontend
+}
+
+
+network_1 = network_with_nat {
+  enable_dns_support = true # When we don't set any param, default values are being used
 }

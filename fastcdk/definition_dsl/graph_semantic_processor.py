@@ -8,10 +8,16 @@ from fastcdk.junk.graph_viz import InteractiveDAG
 
 
 class GraphSemanticProcessor:
-  def __init__(self, definitions, instances):
+  def __init__(self, definitions, stack_instance, other_instances):
     self.graph = DirectedAcyclicGraph()
     self.definitions = definitions
-    self.instances = instances
+
+    self.stack_instance = stack_instance
+    self.other_instances = other_instances
+
+    print("Definitions passed: " + str(len(definitions)))
+    print("Instances passed: " + str(len(other_instances.table) + 1))
+    print("\n\n")
 
 
   def visualize(self):
@@ -87,44 +93,97 @@ class GraphSemanticProcessor:
 
   def add_instances(self):
     print("\n\n")
-    print("Add Instances")
-    for instance in self.instances:
-      print("Instance name: " + instance.semantic_data.stack_instance.stack_name)
+    print("Adding Instance with stack name: " + self.stack_instance.stack_name)
 
-      # Find all dep override indicators
-      dep_overrides = set()
-      for oi in instance.semantic_data.other_instances.table:
-        oi_obj = instance.semantic_data.other_instances.table[oi]
-        for dov in oi_obj.dep_overrides:
-          dep_overrides.add(dov)
-          print("-------" + dov)
+    # Add all instances connected to
+    for oi_key in self.stack_instance.children:
+      print("--- adding other instance: " + oi_key)
+      if oi_key not in self.other_instances.table:
+        raise TextXSemanticError(f"Instance with name '{oi_key}' is not defined.")
+      oi_obj = self.other_instances.table[oi_key]
 
-      # Check if all dep overrides exist in instances
-      for dep in dep_overrides:
-        if dep not in instance.semantic_data.other_instances.table:
-          raise TextXSemanticError(f"Instance for ependancy override '{dep}' not found.", **get_location(instance))
-        
+      # Find required definition to be used
+      node_to_copy = self.graph.get_node(oi_obj.def_name)
+      if node_to_copy is None:
+        raise TextXSemanticError(f"Definition '{oi_obj.def_name}' for instance named '{oi_key}' not found.")
+      
+      # Make deep copy of definition
+      def_deep_copy = deep_copy_def(node_to_copy.definition)
+      oi_obj.apply_to(def_deep_copy)
 
-      for oi_key in [*instance.semantic_data.stack_instance.children, *dep_overrides]:
-        if oi_key not in instance.semantic_data.other_instances.table:
-          raise TextXSemanticError(f"Stack instsnce with name '{oi_key}' is not defined.", **get_location(instance))
-        
-        oi = instance.semantic_data.other_instances.table[oi_key]
+      # Make new node with deep copy
+      print("Creating instance of: " + oi_obj.def_name + " with new assigned name: " + oi_obj.assigned_name)
+      new_node = GraphNode(def_deep_copy, NodeType.INSTANCE, assigned_name=oi_obj.assigned_name, edges=node_to_copy.edges)
+      self.graph.add_node(new_node)
 
-        # Find required definition to be used
-        node_to_copy = self.graph.get_node(oi.def_name)
-        if node_to_copy is None:
-          raise TextXSemanticError(f"Definition '{oi.def_name}' for instance named '{oi_key}' not found.", **get_location(instance))
-        
-        # Make deep copy of definition
-        def_deep_copy = deep_copy_def(node_to_copy.definition)
-        oi.apply_to(def_deep_copy)
+    
 
-        # Make new node with deeo copy
-        new_node = GraphNode(def_deep_copy, NodeType.INSTANCE, assigned_name=oi.assigned_name, edges=node_to_copy.edges)
-        self.graph.add_node(new_node)
+  
+    ############
+    # Handle dep overrides separately
+    # Find all dep override indicators
+    print("\n\nHandling dep overrides")
+    for oi_key in self.other_instances.table:
+      oi_obj = self.other_instances.table[oi_key]
+      oi_node = self.graph.get_node(oi_key)
+      print("Processing dep overrides for instance: " + oi_key)
+      for dov_oi_key in oi_obj.dep_overrides:
+        print(" - dep override: " + dov_oi_key)
+    
+        # Create if it is not already created
+        dov_node = self.graph.get_node(dov_oi_key)
+        if dov_node is None:
+          print(" - Creating dep override instance node: " + dov_oi_key)
+          if dov_oi_key not in self.other_instances.table:
+            raise TextXSemanticError(f"Instance for dependancy override '{dov_oi_key}' not found.")
+          
+          # Find required definition to be used
+          dov_oi_obj = self.other_instances.table[dov_oi_key]
+          node_to_copy = self.graph.get_node(dov_oi_obj.def_name)
+          if node_to_copy is None:
+            raise TextXSemanticError(f"Definition '{dov_oi_obj.def_name}' for instance named '{dov_oi_obj.assigned_name}' not found.")
+          
+          # Make deep copy of definition
+          def_deep_copy = deep_copy_def(node_to_copy.definition)
+          dov_oi_obj.apply_to(def_deep_copy)
+
+          # Make new node with deep copy
+          print(" - Creating instance of: " + dov_oi_obj.def_name + " with new assigned name: " + dov_oi_obj.assigned_name)
+          new_node = GraphNode(def_deep_copy, NodeType.INSTANCE, assigned_name=dov_oi_obj.assigned_name, edges=node_to_copy.edges)
+          self.graph.add_node(new_node)
+          dov_node = new_node
+        else:
+          print(" - Dep override node already exists: " + dov_oi_key)
+
+        # Find the nodes which need to be replaced
+        for edge in oi_node.edges:
+          edge_node = self.graph.get_node(edge)
+          if edge_node.definition.name == dov_node.definition.name:
+            print(f" -> Replacing parent edge from {oi_node.assigned_name} to {edge_node.assigned_name}")
+            self.graph.replace_edge(oi_node.assigned_name, edge_node.assigned_name, dov_node.assigned_name)
+        print("--------\n")
+              
+
+
+
+
+    ############
+    # Add stack instance
+    stack_def_deep_copy = deep_copy_def(self.graph.get_node("stack").definition)
+    self.stack_instance.apply_to_stack_def(stack_def_deep_copy)
+    new_stack_node = GraphNode(stack_def_deep_copy, NodeType.INSTANCE, assigned_name=self.stack_instance.stack_name, edges=[])
+    self.graph.add_node(new_stack_node)
+
+    # Add stack instance children as edges in graph
+    for child in self.stack_instance.children:
+      to_node = self.graph.get_node(child)
+      if to_node is None:
+        raise TextXSemanticError(f"Instance or definition with name '{child}' is not found.")
+      self.graph.add_edge(new_stack_node, to_node)
+      
+
 
     print("All Instance(s) processed\n")
 
 
-    >>>> TODO: Handle dep_overrides
+    #### >>>> TODO: Generate files and DONE!

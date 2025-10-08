@@ -151,6 +151,8 @@ class OtherInstanceSem:
   def apply_to(self, definition: DefSem):
     for p in self.inputs:
       match p:
+        case "path":
+          definition.default_inputs.path = self.inputs[p]
         case "id_prefix":
           definition.default_inputs.id_prefix = self.inputs[p]
         case "name_prefix":
@@ -159,18 +161,14 @@ class OtherInstanceSem:
           definition.default_inputs.class_prefix = self.inputs[p]
         case "class_name":
           definition.default_inputs.class_name = self.inputs[p]
-        case "template_file":
-          definition.template_file = self.inputs[p]
-        case "default_path":
-          definition.default_path = self.inputs[p]
         case _:
-          if p in definition.env_vars.table and isinstance(self.inputs[p], EnvVarsSem):
+          if p in definition.env_vars.table and isinstance(self.inputs[p], EnvVarSem):
               definition.env_vars.table[p].path_joined = self.inputs[p].path_joined
               definition.env_vars.table[p].path_parts = self.inputs[p].path_parts
           elif p in definition.default_inputs.extras:
             definition.default_inputs.extras[p] = self.inputs[p]
           else:
-            raise Exception("Not found.")
+            raise Exception(f"Input {p} is not found in definition {definition.name} input list.")
   
 
 @dataclass
@@ -189,6 +187,7 @@ class StackInstanceSem:
   aws_stack_name: Value
   project: Value
   exe_env: Value
+  inputs: Mapping[str, Value | EnvVarSem] = field(default_factory=dict)
   children: Tuple[str, ...] = field(default_factory=tuple)
 
   def to_dict(self) -> Dict[str, Any]:
@@ -199,8 +198,51 @@ class StackInstanceSem:
       "aws_stack_name": self.aws_stack_name,
       "project": self.project,
       "exe_env": self.exe_env,
+      "inputs": {
+        k: (v.to_dict() if isinstance(v, EnvVarSem) else v)
+        for k, v in self.inputs.items()
+      },
       "children": list(self.children),
     }
+  
+  def apply_to_stack_def(self, stack_def):
+    for p in self.inputs:
+      match p:
+        case "path":
+          stack_def.default_inputs.path = self.inputs[p]
+        case "id_prefix":
+          stack_def.default_inputs.id_prefix = self.inputs[p]
+        case "name_prefix":
+          stack_def.default_inputs.name_prefix = self.inputs[p]
+        case "class_prefix":
+          stack_def.default_inputs.class_prefix = self.inputs[p]
+        case "class_name":
+          stack_def.default_inputs.class_name = self.inputs[p]
+        case _:
+          if p in stack_def.env_vars.table and isinstance(self.inputs[p], EnvVarsSem):
+              stack_def.env_vars.table[p].path_joined = self.inputs[p].path_joined
+              stack_def.env_vars.table[p].path_parts = self.inputs[p].path_parts
+          elif p in stack_def.default_inputs.extras:
+            stack_def.default_inputs.extras[p] = self.inputs[p]
+          else:
+            raise Exception("Not found.")
+          
+    stack_def.default_inputs.extras["stack_name"] = self.stack_name
+    stack_def.default_inputs.extras["aws_account_id"] = self.aws_account_id
+    stack_def.default_inputs.extras["aws_region"] = self.aws_region
+    stack_def.default_inputs.extras["aws_stack_name"] = self.aws_stack_name
+    stack_def.default_inputs.extras["project"] = self.project
+    stack_def.default_inputs.extras["exe_env"] = self.exe_env
+
+    # add children as deps
+    for child in self.children:
+      if child not in stack_def.deps.table:
+        stack_def.deps.table[child] = DepSem(
+          assigned_name=child,
+          def_name=child,
+          props={},
+        )
+
 
 
 @dataclass
@@ -244,7 +286,6 @@ def _deep_copy_envvars(evs: EnvVarsSem) -> EnvVarsSem:
   new_table: Dict[str, EnvVarSem] = {k: _deep_copy_envvar(v) for k, v in evs.table.items()}
   return EnvVarsSem(table=new_table)
 
-
 def _deep_copy_default_inputs(di: DefaultInputsSem) -> DefaultInputsSem:
   return DefaultInputsSem(
     path=di.path,
@@ -254,7 +295,6 @@ def _deep_copy_default_inputs(di: DefaultInputsSem) -> DefaultInputsSem:
     class_name=di.class_name,
     extras=dict(di.extras),
   )
-
 
 def _deep_copy_dep(dep: DepSem) -> DepSem:
   def _clone_prop(v: Any) -> Any:
@@ -273,14 +313,12 @@ def _deep_copy_dep(dep: DepSem) -> DepSem:
     props=new_props,
   )
 
-
 def _deep_copy_deps(deps: DepsSem) -> DepsSem:
   new_table: Dict[str, DepSem] = {k: _deep_copy_dep(v) for k, v in deps.table.items()}
   return DepsSem(table=new_table)
 
 def _deep_copy_templates(tm: TemplateMapSem) -> TemplateMapSem:
   return TemplateMapSem(table=dict(tm.table))
-
 
 def deep_copy_def(defn: DefSem) -> DefSem:
   return DefSem(
