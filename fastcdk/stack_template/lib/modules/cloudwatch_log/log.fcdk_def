@@ -1,18 +1,21 @@
 cloudwatch_log_group {
 
-   templates {
-    log.j2 = log.root.ts
-   }
+  templates {
+    log {
+      template_file = log.j2
+      gen_path = /
+      gen_file_name = log.root.ts
+
+      var_name = log
+      class_name = Log
+      id_prefix = Root
+      name_prefix = root
+    }
+  }
 
   deps {}
 
   env_vars {}
 
-  default_inputs {
-    path = /
-    id_prefix = Root
-    name_prefix = root
-    class_prefix = null
-    class_name = Log
-  }
+  default_inputs {}
 }

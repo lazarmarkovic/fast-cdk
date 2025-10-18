@@ -1,7 +1,16 @@
 network_with_nat {
 
   templates {
-    network.j2 = network.root.ts
+    network {
+      template_file = network.j2
+      gen_path = /
+      gen_file_name = network.root.ts
+
+      var_name = network
+      class_name = Network
+      id_prefix = Root
+      name_prefix = root
+    }
   }
 
   deps {}
@@ -10,13 +19,7 @@ network_with_nat {
     vpc_cidr = BuildParams.Root.VpcCidr = 10.0.0.0/16
   }
 
-  default_inputs {
-    path = /
-    id_prefix = Root
-    name_prefix = root
-    class_prefix = null
-    class_name = Network
-    
+  default_inputs {    
     max_azs = 3
     nat_gateways = 1
     enable_dns_support = true

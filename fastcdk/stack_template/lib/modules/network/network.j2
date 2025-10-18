@@ -1,4 +1,4 @@
-{%- if is_class_def -%}
+{%- if render_class_def -%}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
@@ -6,7 +6,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 // Config imports
 import { EnvConfig } from "@base/config/configSchema";
 
-export class {{id_prefix}}{{class_prefix}}{{class_name}} {
+export class {{class_name}} {
   public readonly vpc: ec2.Vpc;
   {%- if add_public_subnet %}
   public readonly publicVpcSubnetsSelection: ec2.SubnetSelection;
@@ -103,6 +103,6 @@ export class {{id_prefix}}{{class_prefix}}{{class_name}} {
     {%- endif %}
   }
 }
-{%- elif is_constr_def -%}
-new {{id_prefix}}{{class_prefix}}{{class_name}}(mainStack, envConfig);
+{%- else -%}
+new {{class_name}}(mainStack, envConfig);
 {%- endif -%}

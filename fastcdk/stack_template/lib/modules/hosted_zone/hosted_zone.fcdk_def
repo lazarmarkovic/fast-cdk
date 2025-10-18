@@ -1,7 +1,16 @@
 hosted_zone {
 
   templates {
-    hosted_zone.j2 = hosted-zone.root.ts
+    hosted_zone {
+      template_file = hosted_zone.j2
+      gen_path = /
+      gen_file_name = hosted-zone.root.ts
+
+      var_name = hostedZone
+      class_name = HostedZone
+      id_prefix = Root
+      name_prefix = root
+    }
   }
 
   deps {}
@@ -11,10 +20,5 @@ hosted_zone {
   }
 
   default_inputs {
-    path = /
-    id_prefix = Root
-    name_prefix = root
-    class_prefix = null
-    class_name = HostedZone
   }
 }

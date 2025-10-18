@@ -1,126 +1,190 @@
 
-from textx import get_location
+from textx import get_location  # noqa: I001
 from textx.exceptions import TextXSemanticError
 
-from fastcdk.definition_dsl.class_model import DefaultInputsSem, DefSem, DepSem, DepsSem, EnvVarSem, EnvVarsSem, InstancesSem, OtherInstanceSem, OtherInstancesSem, StackInstanceSem, TemplateMapSem, deep_copy_def
+from fastcdk.definition_dsl.class_model import (
+  SingleDefinition, 
+
+  TemplateMap,
+  SingleTemplate,
+
+  DefaultInputMap,
+
+  SingleGeneralInputType,
+  SingleGeneralInput,
+
+  SingleDependency, 
+  DependencyMap, 
+
+  SingleEnvVar, 
+  EnvVarMap,
+
+  SingleInstance, 
+
+  SingleOtherInstance, 
+  OtherInstanceMap,
+
+  SingleStackInstance,
+)
 
 
 class SemanticProcessors:
   def __init__(self):
     self.definitions = []
-    self.instances = []
-
-    self.definitions = []
+    self.instances = [] 
+ 
     self.obj_processors = {
-      'TempalteMapSection': self.template_map_section, 
-      'EnvVar': self.env_var,
-      'EnvVarsSection': self.env_vars_section,
-      'DefaultInputsSection': self.default_inputs_section,
-      'DepEntry': self.dep_entry,
-      'DepsSection': self.deps_section,
-      'Definition': self.definition,
+      'SingleTemplate': self.single_template,
+      'TemplateMapSection': self.template_map_section,
 
-      'Instance': self.instance,
-      'OtherInstances': self.other_instance,
-      'StackInstance': self.stack_instance,
+      'SingleGeneralInputAssign': self.single_general_input_assign,
+      'SingleDependency': self.single_dependency,
+      'DependencyMapSection': self.dependency_map_section,
+
+      'SingleEnvVar': self.single_env_var,
+      'EnvVarMapSection': self.env_var_map_section,
+
+      'SingleDefaultInputAssign': self.single_general_input_assign,
+      'DefaultInputMapSection': self.default_input_map_section,
+
+      'SingleDefinition': self.definition,
+
+      
+      'SingleOtherInstance': self.single_other_instance,
+      'SingleStackInstance': self.single_stack_instance,
+
+      'SingleInstance': self.single_instance,
+    }
+
+    self.template_field_map = {
+      "TemplateFileAssign": "template_file",
+      "GenPathAssignpath": "gen_path",
+      "GenFileNameAssign": "gen_file_name",
+      "VarNameAssign": "var_name",
+      "ClassNameAssign": "class_name",
+      "IdPrefixAssign": "id_prefix",
+      "NamePrefixAssign": "name_prefix",
     }
 
 
-  ###### OBJECT PROCESSING ######
+  #########################
+  ##### Definition processors
   def _join_ref_parts(self, ref) -> list[str]:
     return [ref.first, *list(ref.rest)]
   
 
-  def template_map_section(self, entity):
-    generated_file_checks = set()
-    table = {}
-    for e in entity.entries:
-      if e.template_file in table:
-        raise TextXSemanticError( f"Duplicate template map key '{e.template_file}'.", **get_location(e))
-      if e.generated_file in generated_file_checks:
-        raise TextXSemanticError(f"Duplicate template map key '{e.generated_file}'.", **get_location(e))
-      
-      generated_file_checks.add(e.generated_file)
-      table[e.template_file] = e.generated_file
-    entity.semantic_data = TemplateMapSem(table=table)
-
-
-  def env_var(self, entity):
-    parts = self._join_ref_parts(entity.ref)
-    entity.semantic_data = EnvVarSem(
-      name=entity.key,
-      path_joined=".".join(parts),
-      path_parts=tuple(parts),
-      value=entity.val,
-    )
-
-
-  def env_vars_section(self, entity):
-    entity.semantic_data = EnvVarsSem(
-      table={ev.semantic_data.name: ev.semantic_data for ev in entity.entries}
-    )
-
-
-  def default_inputs_section(self, entity):
-    extras = {}
-    for i in entity.inputs:
-      if i.key in {"path","id_prefix","name_prefix","class_prefix","class_name"} or i.key in extras:
-        raise TextXSemanticError(f"Duplicate input variable '{i.key}' in default_inputs.", **get_location(i.key))
-      extras[i.key] = i.val
-
-    entity.semantic_data = DefaultInputsSem(
-      path=entity.path.val,  
+  def single_template(self, entity):
+    entity.semantic_data = SingleTemplate(
+      template_name=entity.template_name,
+      template_file=entity.template_file.val,
+      gen_path=entity.gen_path.val,
+      gen_file_name=entity.gen_file_name.val,
+      var_name=entity.var_name.val,
+      class_name=entity.class_name.val,
       id_prefix=entity.id_prefix.val,
       name_prefix=entity.name_prefix.val,
-      class_prefix=entity.class_prefix.val,
-      class_name=entity.class_name.val,
-      extras=extras,
     )
+  
+
+  def template_map_section(self, entity):
+    table = {}
+    for e in entity.entries:
+      sem_data = e.semantic_data
+      if sem_data.template_name in table:
+        raise TextXSemanticError( f"Duplicate template name '{sem_data.template_name}'.", **get_location(e))
+      table[sem_data.template_name] = sem_data
+    entity.semantic_data = TemplateMap(table=table)
 
 
-  def dep_entry(self, entity):
-    if (entity.assigned_name == entity.def_name):
-      raise TextXSemanticError(f"Dep entry assigned_name '{entity.assigned_name}' cannot be the same as definition name.", **get_location(entity))
-
-    props_dict = {}
-    for i in entity.props:
-      if (i.key in props_dict):
-        raise TextXSemanticError(f"Duplicate input variable '{i.key}' in dep_entry section.", **get_location(i))
-      if getattr(i, "ref", None) is not None:
-        parts = self._join_ref_parts(i.ref)
-        props_dict[i.key] = EnvVarSem(
-          name=i.key,
+  def single_general_input_assign(self, entity):
+    if getattr(entity, "ref", None) is not None:
+      parts = self._join_ref_parts(entity.ref)
+      entity.semantic_data = SingleGeneralInput(
+        type=SingleGeneralInputType.ENV_VAR_INPUT,
+        key=entity.key,
+        val=SingleEnvVar(
+          name=entity.key,
           path_joined=".".join(parts),
           path_parts=tuple(parts),
-          value=None,
+          value=getattr(entity, "val", None),
         )
-      else:
-        props_dict[i.key] = i.val
-  
-    entity.semantic_data = DepSem(
+      )
+    elif getattr(entity, "val", None) is not None:
+      entity.semantic_data = SingleGeneralInput(
+        type=SingleGeneralInputType.REGULAR_INPUT,
+        key=entity.key,
+        val=entity.val
+      )
+    elif getattr(entity, "template_name", None) is not None and getattr(entity, "template_field", None) is not None:
+      field_name = self.template_field_map.get(entity.template_field.__class__.__name__)
+      entity.semantic_data = SingleGeneralInput(
+        type=SingleGeneralInputType.TEMPLATE_INPUT,
+        key=(entity.template_name, field_name),
+        val=entity.template_field.val
+      )
+    else:
+      raise TextXSemanticError("Invalid dependancy input.", **get_location(entity))
+
+
+  def single_dependency(self, entity):
+    if (entity.assigned_name == entity.def_name):
+      raise TextXSemanticError(f"Dep entry assigned_name '{entity.assigned_name}' cannot be the same as definition name.", **get_location(entity))
+    inputs_dict = {}
+    for i in entity.inputs:
+      single_input = i.semantic_data
+      if (single_input.key in inputs_dict):
+        raise TextXSemanticError(f"Duplicate input variable '{".".join(single_input.key)}' in dep_entry section.", **get_location(i))
+      inputs_dict[single_input.key] = single_input
+    entity.semantic_data = SingleDependency(
       assigned_name=entity.assigned_name,
       def_name=entity.def_name if entity.def_name != '' else entity.assigned_name,
-      props=props_dict
+      inputs=inputs_dict
     )
 
 
-  def deps_section(self, entity):
+  def dependency_map_section(self, entity):
     table = {}
     for dep in entity.entries:
       k = dep.semantic_data.assigned_name
       if k in table:
         raise TextXSemanticError(f"Duplicate dep assigned name '{k}' in deps section.", **get_location(dep))
       table[k] = dep.semantic_data
-    entity.semantic_data = DepsSem(table=table)
+    entity.semantic_data = DependencyMap(table=table)
+
+
+  def single_env_var(self, entity):
+    parts = self._join_ref_parts(entity.ref)
+    entity.semantic_data = SingleEnvVar(
+      name=entity.key,
+      path_joined=".".join(parts),
+      path_parts=tuple(parts),
+      value=entity.val
+    )
+
+
+  def env_var_map_section(self, entity):
+    entity.semantic_data = EnvVarMap(
+      table={ev.semantic_data.name: ev.semantic_data for ev in entity.entries}
+    )
+
+
+  def default_input_map_section(self, entity):
+    table = {}
+    for i in entity.inputs:
+      single_input = i
+      if (single_input.key in table):
+        raise TextXSemanticError(f"Duplicate input variable '{single_input.key}' in dep_entry section.", **get_location(i))
+      table[single_input.key] = single_input
+    entity.semantic_data = DefaultInputMap(table=table)
 
 
   def definition(self, entity):
-    templates = getattr(entity.template_map, "semantic_data", None) or TemplateMapSem({})
-    deps = getattr(entity.deps, "semantic_data", None) or DepsSem({})
-    envs = getattr(entity.env_vars, "semantic_data", None) or EnvVarsSem({})
-    default_inputs = getattr(entity.default_inputs, "semantic_data", None) or DefaultInputsSem({})
+    templates = getattr(entity.template_map, "semantic_data", None) or TemplateMap({})
+    deps = getattr(entity.deps, "semantic_data", None) or DependencyMap({})
+    envs = getattr(entity.env_vars, "semantic_data", None) or EnvVarMap({})
+    default_inputs = getattr(entity.default_inputs, "semantic_data", None) or DefaultInputMap({})
 
-    entity.semantic_data = DefSem(
+    entity.semantic_data = SingleDefinition(
       name=entity.name,
       templates=templates,
       deps=deps,
@@ -131,26 +195,18 @@ class SemanticProcessors:
 
   #########################
   ##### Instance processors
-  def other_instance(self, entity):
+  def single_other_instance(self, entity):
     if (entity.assigned_name == entity.def_name):
       raise TextXSemanticError(f"Dep entry assigned_name '{entity.assigned_name}' cannot be the same as definition name.", **get_location(entity))
 
     inputs_dict = {}
     for i in entity.inputs:
-      if (i.key in inputs_dict):
-        raise TextXSemanticError(f"Duplicate input variable '{i.key}' in dep_entry section.", **get_location(i))
-      if getattr(i, "ref", None) is not None:
-        parts = self._join_ref_parts(i.ref)
-        inputs_dict[i.key] = EnvVarSem(
-          name=i.key,
-          path_joined=".".join(parts),
-          path_parts=tuple(parts),
-          value=None,
-        )
-      else:
-        inputs_dict[i.key] = i.val
+      single_input = i.semantic_data
+      if (single_input.key in inputs_dict):
+        raise TextXSemanticError(f"Duplicate input variable '{".".join(single_input.key)}' in dep_entry section.", **get_location(i))
+      inputs_dict[single_input.key] = single_input
   
-    entity.semantic_data = OtherInstanceSem(
+    entity.semantic_data = SingleOtherInstance(
       assigned_name=entity.assigned_name,
       def_name=entity.def_name if entity.def_name != '' else entity.assigned_name,
       inputs=inputs_dict,
@@ -158,7 +214,7 @@ class SemanticProcessors:
     )
 
 
-  def stack_instance(self, entity):
+  def single_stack_instance(self, entity):
     # Validate children
     child_names = set()
     for c in entity.children:
@@ -166,19 +222,22 @@ class SemanticProcessors:
         raise TextXSemanticError(f"Duplicate child instance name '{c.name}' in stack_instance section.", **get_location(c))
       child_names.add(c.name)
 
-    entity.semantic_data = StackInstanceSem(
+    inputs_dict = {}
+    for i in entity.inputs:
+      single_input = i.semantic_data
+      if (single_input.key in inputs_dict):
+        raise TextXSemanticError(f"Duplicate input variable '{".".join(single_input.key)}' in dep_entry section.", **get_location(i))
+      inputs_dict[single_input.key] = single_input
+
+    entity.semantic_data = SingleStackInstance(
       stack_name=entity.stack_name,
-      aws_account_id=entity.aws_account_id.val,
-      aws_region=entity.aws_region.val,
-      aws_stack_name=entity.aws_stack_name.val,
-      project=entity.project.val,
-      exe_env=entity.exe_env.val,
+      inputs=inputs_dict,
       children=tuple(child_names)
     )
 
 
-  def instance(self, entity):
-    stack_instance = getattr(entity.stack_instance, "semantic_data", None) or StackInstanceSem({})
+  def single_instance(self, entity):
+    stack_instance = getattr(entity.stack_instance, "semantic_data", None) or SingleStackInstance({})
     
     other_instances_table = {}
     for oi in entity.other_instances:
@@ -187,18 +246,18 @@ class SemanticProcessors:
         raise TextXSemanticError(f"Duplicate instance name '{k}' in instance section.", **get_location(oi))
       other_instances_table[k] = oi.semantic_data
 
-    entity.semantic_data = InstancesSem(
+    entity.semantic_data = SingleInstance(
       stack_instance=stack_instance,
-      other_instances=OtherInstancesSem(table=other_instances_table)
+      other_instances=OtherInstanceMap(table=other_instances_table)
     )
 
 
 
-  ###### MODEL PROCESSING ######
-  def model_processor(self, model, metamodel):
-    new_definitions = getattr(model.fcdk, "definitions", None) or []
-    new_instances = getattr(model.fcdk, "instances", None) or []
+  # ###### MODEL PROCESSING ######
+  # def model_processor(self, model, metamodel):
+  #   new_definitions = getattr(model.fcdk, "definitions", None) or []
+  #   new_instances = getattr(model.fcdk, "instances", None) or []
 
-    self.definitions.extend(new_definitions)
-    self.instances.extend(new_instances)
+  #   self.definitions.extend(new_definitions)
+  #   self.instances.extend(new_instances)
 

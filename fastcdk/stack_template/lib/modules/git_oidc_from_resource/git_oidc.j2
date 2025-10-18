@@ -1,4 +1,4 @@
-{% if is_class_def %}
+{% if render_class_def %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -7,7 +7,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import { EnvConfig } from "@base/config/configSchema";
 
 
-export class {{id_prefix}}{{class_prefix}}{{class_name}} {
+export class {{class_name}} {
   public readonly oidcProvider: iam.IOpenIdConnectProvider;
 
   constructor(
@@ -21,5 +21,5 @@ export class {{id_prefix}}{{class_prefix}}{{class_name}} {
     );
   }
 }
-{%- elif is_constr_def -%} new {{id_prefix}}{{class_prefix}}{{class_name}}(mainStack, envConfig);
+{%- else -%} new {{class_name}}(mainStack, envConfig);
 {% endif %}

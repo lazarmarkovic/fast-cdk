@@ -1,7 +1,16 @@
 ecr_from_resource {
 
   templates {
-    ecr.j2 = ecr.root.ts
+    ecr {
+      template_file = ecr.j2
+      gen_path = /
+      gen_file_name = ecr.root.ts
+
+      var_name = ecr
+      class_name = Ecr
+      id_prefix = Root
+      name_prefix = root
+    }
   }
 
   deps {}
@@ -11,10 +20,5 @@ ecr_from_resource {
   }
 
   default_inputs {
-    path = /
-    id_prefix = Root
-    name_prefix = root
-    class_prefix = null
-    class_name = Ecr
   }
 }

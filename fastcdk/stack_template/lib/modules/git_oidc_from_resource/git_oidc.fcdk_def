@@ -1,7 +1,16 @@
 git_oidc_from_resource {
 
   templates {
-    git_oidc.j2 = git_oidc.root.ts
+    git_oidc {
+      template_file = git_oidc.j2
+      gen_path = /
+      gen_file_name = git-oidc.root.ts
+
+      var_name = gitOidc
+      class_name = GitOidc
+      id_prefix = Root
+      name_prefix = root
+    }
   }
 
   deps {}
@@ -11,10 +20,5 @@ git_oidc_from_resource {
   }
 
   default_inputs {
-    path = /
-    id_prefix = Root
-    name_prefix = root
-    class_prefix = null
-    class_name = GitOidcRoot
   }
 }

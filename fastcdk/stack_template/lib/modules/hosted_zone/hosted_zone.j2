@@ -1,4 +1,4 @@
-{% if is_class_def %}
+{% if render_class_def %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as r53 from "aws-cdk-lib/aws-route53";
@@ -7,7 +7,7 @@ import * as r53 from "aws-cdk-lib/aws-route53";
 import { EnvConfig } from "@base/config/configSchema";
 
 
-export class {{id_prefix}}{{class_prefix}}{{class_name}} {
+export class {{class_name}} {
   public readonly appHostedZone: r53.IHostedZone;
 
   constructor(
@@ -24,5 +24,5 @@ export class {{id_prefix}}{{class_prefix}}{{class_name}} {
     cdk.Tags.of(this.appHostedZone).add("Name", "{{name_prefix}}.hosting-zone");
   }
 }
-{%- elif is_constr_def  -%} new {{id_prefix}}{{class_prefix}}{{class_name}}(mainStack, envConfig);
+{%- else -%} new {{class_name}}(mainStack, envConfig);
 {% endif %}

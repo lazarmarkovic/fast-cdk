@@ -1,0 +1,60 @@
+{% if render_class_def %}
+// External imports
+import * as cdk from "aws-cdk-lib";
+
+// Config import
+import { EnvConfig } from "@base/config/configSchema";
+import { DeploymentEnvEnum } from "@base/mics/deploymentEnvEnum";
+
+// Root imports
+import { {{main_hosted_zone.class}} } from "@base/{{main_hosted_zone.path}}";
+import { {{git_oidc_from_resource.class}} } from "@base/{{git_oidc_from_resource.path}}";
+
+// Local imports
+import { {{s3_bucket_for_cloudfront.class}} } from "@base/{{s3_bucket_for_cloudfront.path}}";
+import { {{s3_based_cloudfront.class}} } from "@base/{{s3_based_cloudfront.path}}";
+import { {{s3_based_cloudfront_git_oidc_role.class}} } from "@base/{{s3_based_cloudfront_git_oidc_role.path}}";
+
+
+export class {{idPrefix}}{{classPrefix}}{{className}} {
+  public readonly {{s3_bucket_for_cloudfront.instance_name}}: {{s3_bucket_for_cloudfront.class}};
+  public readonly {{s3_based_cloudfront.instance_name}}: {{s3_based_cloudfront.class}};
+  public readonly {{s3_based_cloudfront_git_oidc_role.instance_name}}: {{s3_based_cloudfront_git_oidc_role.class}};
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+    {{main_hosted_zone.instance_name}}: {{main_hosted_zone.class}},
+    {{git_oidc_from_resource.instance_name}}: {{git_oidc_from_resource.class}},
+  ) {
+    // App frontend S3 bucket
+    this.{{s3_bucket_for_cloudfront.instance_name}} = new {{s3_bucket_for_cloudfront.class}}(mainStack, envConfig);
+
+
+    // CloudFront holder
+    this.{{s3_based_cloudfront.instance_name}} = new {{s3_based_cloudfront.class}}(
+      mainStack,
+      envConfig,
+      {{main_hosted_zone.instance_name}},
+      this.{{s3_bucket_for_cloudfront.instance_name}},
+    );
+
+    // GitHub Actions OIDC role
+    this.{{s3_based_cloudfront_git_oidc_role.instance_name}} = new {{s3_based_cloudfront_git_oidc_role.class}}(
+      mainStack,
+      envConfig,
+      {{git_oidc_from_resource.instance_name}},
+      this.{{s3_bucket_for_cloudfront.instance_name}},
+      this.{{s3_based_cloudfront.instance_name}},
+    );
+  }
+}
+{%- else -%} new {{class_name}}(
+  mainStack, 
+  envConfig,
+
+  this.{{ git_oidc_from_resource.instance_name }},
+  this.{{ s3_bucket_for_cloudfront.instance_name }},
+  this.{{ s3_based_cloudfront.instance_name }},
+);
+{% endif %}

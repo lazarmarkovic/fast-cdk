@@ -1,129 +1,99 @@
 from __future__ import annotations
 
-import re
-from dataclasses import asdict, dataclass, field, is_dataclass
-from typing import Any, Dict, Mapping, Tuple, Union
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Dict, Mapping, Union
 
 Value = Union[str, int, float, bool, None]
+
 
 
 ##########################
 ###### Definition class model
 @dataclass
-class TemplateMapSem:
-  # map "template.j2" -> "generated.ts" (both as dotted strings from RefPath)
-  table: Mapping[str, str] = field(default_factory=dict)
-
-  def to_dict(self) -> Dict[str, str]:
-    return dict(self.table)
-  
-
-@dataclass
-class EnvVarSem:
+class SingleDefinition:
   name: str
-  path_joined: str
-  path_parts: Tuple[str, ...]
-  value: Value
-
-  def to_dict(self) -> Dict[str, Any]:
-    return {
-      "name": self.name,
-      "path_joined": self.path_joined,
-      "path_parts": list(self.path_parts),
-      "value": self.value,
-    }
+  templates: TemplateMap
+  deps: DependencyMap
+  env_vars: EnvVarMap
+  default_inputs: DefaultInputMap
 
 
 @dataclass
-class EnvVarsSem:
-  table: Mapping[str, EnvVarSem] = field(default_factory=dict)
-
-  def to_dict(self) -> Dict[str, Any]:
-    return {k: v.to_dict() for k, v in self.table.items()}
-
-
-@dataclass
-class DefaultInputsSem:
-  path: str
+class SingleTemplate:
+  template_name: str
+  template_file: str
+  gen_path: str
+  gen_file_name: str
+  var_name: str
+  class_name: str
   id_prefix: str
   name_prefix: str
-  class_prefix: str
-  class_name: str
-  extras: Mapping[str, Value] = field(default_factory=dict)
-
-  def to_dict(self) -> Dict[str, Value]:
-    base: Dict[str, Value] = {
-      "path": self.path,
-      "id_prefix": self.id_prefix,
-      "name_prefix": self.name_prefix,
-      "class_prefix": self.class_prefix,
-      "class_name": self.class_name,
-    }
-    base.update(dict(self.extras))
-    return base
 
 
 @dataclass
-class DepSem:
+class TemplateMap:
+  table: Mapping[str, SingleTemplate] = field(default_factory=dict)
+
+
+@dataclass
+class SingleEnvVar:
+  name: str
+  path_joined: str
+  path_parts: tuple[str, ...]
+  value: Value = None
+
+
+@dataclass
+class EnvVarMap:
+  table: Mapping[str, SingleEnvVar] = field(default_factory=dict)
+
+
+@dataclass
+class DefaultInputMap:
+  table: Mapping[str, Value] = field(default_factory=dict)
+
+
+class SingleGeneralInputType(Enum):
+  REGULAR_INPUT = 0
+  TEMPLATE_INPUT = 1
+  ENV_VAR_INPUT = 2
+
+
+@dataclass
+class SingleGeneralInput:
+  type: SingleGeneralInputType
+  key: str | tuple
+  val: Value | SingleEnvVar
+
+class ApplicableToDef:
+  def apply_to(self, definition: SingleDefinition):
+    for _, input_obj in self.inputs.items():
+      if input_obj.type == SingleGeneralInputType.REGULAR_INPUT:
+        definition.default_inputs.table[input_obj.key] = input_obj.val
+      elif input_obj.type == SingleGeneralInputType.ENV_VAR_INPUT:
+        definition.env_vars.table[input_obj.key].path_joined = input_obj.val.path_joined
+        definition.env_vars.table[input_obj.key].path_parts = input_obj.val.path_parts
+        if input_obj.val.value is not None:
+          definition.env_vars.table[input_obj.key].value = input_obj.val.value
+      elif input_obj.type == SingleGeneralInputType.TEMPLATE_INPUT:
+        #setattr(obj, atrr_name, attr_value)
+        setattr(definition.templates.table[input_obj.key[0]], input_obj.key[1], input_obj.val)
+      else:
+        raise Exception("Not found.")
+  
+
+@dataclass
+class SingleDependency(ApplicableToDef):
   assigned_name: str
   def_name: str
-  props: Mapping[str, Value | EnvVarsSem] = field(default_factory=dict)
-
-  def to_dict(self) -> Dict[str, Any]:
-    return {
-      "assigned_name": self.assigned_name,
-      "def_name": self.def_name,
-      "props": dict(self.props),
-    }
+  inputs: Mapping[str | tuple, SingleGeneralInput] = field(default_factory=dict)
   
-  def apply_to(self, definition: DefSem):
-    for p in self.props:
-      match p:
-        case "path":
-          definition.default_inputs.path = self.props[p]
-        case "id_prefix":
-          definition.default_inputs.id_prefix = self.props[p]
-        case "name_prefix":
-          definition.default_inputs.name_prefix = self.props[p]
-        case "class_prefix":
-          definition.default_inputs.class_prefix = self.props[p]
-        case "class_name":
-          definition.default_inputs.class_name = self.props[p]
-        case _:
-          if p in definition.env_vars.table and isinstance(self.props[p], EnvVarsSem):
-              definition.env_vars.table[p].path_joined = self.props[p].path_joined
-              definition.env_vars.table[p].path_parts = self.props[p].path_parts
-          elif p in definition.default_inputs.extras:
-            definition.default_inputs.extras[p] = self.props[p]
-          else:
-            raise Exception("Not found.")
-
-
+  
 
 @dataclass
-class DepsSem:
-  table: Mapping[str, DepSem] = field(default_factory=dict)
-
-  def to_dict(self) -> Dict[str, Any]:
-    return {k: v.to_dict() for k, v in self.table.items()}
-
-
-@dataclass
-class DefSem:
-  name: str
-  templates: TemplateMapSem  
-  deps: DepsSem
-  env_vars: EnvVarsSem
-  default_inputs: DefaultInputsSem
-
-  def to_dict(self) -> Dict[str, Any]:
-    return {
-      "name": self.name,
-      "templates": self.templates.to_dict(),
-      "deps": self.deps.to_dict(),
-      "env_vars": self.env_vars.to_dict(),
-      "default_inputs": self.default_inputs.to_dict(),
-    }
+class DependencyMap:
+  table: Mapping[str, SingleDependency] = field(default_factory=dict)
 
 
 
@@ -131,200 +101,102 @@ class DefSem:
 ###### Instance class model
 
 @dataclass
-class OtherInstanceSem:
+class SingleOtherInstance(ApplicableToDef):
   assigned_name: str
   def_name: str
-  inputs: Mapping[str, Value | EnvVarSem] = field(default_factory=dict)
-  dep_overrides: Tuple[str, ...] = field(default_factory=tuple)
-
-  def to_dict(self) -> Dict[str, Any]:
-    return {
-      "assigned_name": self.assigned_name,
-      "def_name": self.def_name,
-      "inputs": {
-        k: (v.to_dict() if isinstance(v, EnvVarSem) else v)
-        for k, v in self.inputs.items()
-      },
-      "dep_overrides": list(self.dep_overrides),
-    }
-  
-  def apply_to(self, definition: DefSem):
-    for p in self.inputs:
-      match p:
-        case "path":
-          definition.default_inputs.path = self.inputs[p]
-        case "id_prefix":
-          definition.default_inputs.id_prefix = self.inputs[p]
-        case "name_prefix":
-          definition.default_inputs.name_prefix = self.inputs[p]
-        case "class_prefix":
-          definition.default_inputs.class_prefix = self.inputs[p]
-        case "class_name":
-          definition.default_inputs.class_name = self.inputs[p]
-        case _:
-          if p in definition.env_vars.table and isinstance(self.inputs[p], EnvVarSem):
-              definition.env_vars.table[p].path_joined = self.inputs[p].path_joined
-              definition.env_vars.table[p].path_parts = self.inputs[p].path_parts
-          elif p in definition.default_inputs.extras:
-            definition.default_inputs.extras[p] = self.inputs[p]
-          else:
-            raise Exception(f"Input {p} is not found in definition {definition.name} input list.")
+  inputs: Mapping[str | tuple, SingleGeneralInput] = field(default_factory=dict)
+  dep_overrides: tuple[str, ...] = field(default_factory=tuple)
   
 
 @dataclass
-class OtherInstancesSem:
-  table: Mapping[str, OtherInstanceSem] = field(default_factory=dict)
-
-  def to_dict(self) -> Dict[str, Any]:
-    return {k: v.to_dict() for k, v in self.table.items()}
+class OtherInstanceMap:
+  table: Mapping[str, SingleOtherInstance] = field(default_factory=dict)
 
 
 @dataclass
-class StackInstanceSem:
+class SingleStackInstance(ApplicableToDef):
   stack_name: str
-  aws_account_id: str
-  aws_region: str
-  aws_stack_name: Value
-  project: Value
-  exe_env: Value
-  inputs: Mapping[str, Value | EnvVarSem] = field(default_factory=dict)
-  children: Tuple[str, ...] = field(default_factory=tuple)
+  inputs: Mapping[str | tuple, SingleGeneralInput] = field(default_factory=dict)
+  children: tuple[str, ...] = field(default_factory=tuple)
 
-  def to_dict(self) -> Dict[str, Any]:
-    return {
-      "stack_name": self.stack_name,
-      "aws_account_id": self.aws_account_id,
-      "aws_region": self.aws_region,
-      "aws_stack_name": self.aws_stack_name,
-      "project": self.project,
-      "exe_env": self.exe_env,
-      "inputs": {
-        k: (v.to_dict() if isinstance(v, EnvVarSem) else v)
-        for k, v in self.inputs.items()
-      },
-      "children": list(self.children),
-    }
-  
   def apply_to_stack_def(self, stack_def):
-    for p in self.inputs:
-      match p:
-        case "path":
-          stack_def.default_inputs.path = self.inputs[p]
-        case "id_prefix":
-          stack_def.default_inputs.id_prefix = self.inputs[p]
-        case "name_prefix":
-          stack_def.default_inputs.name_prefix = self.inputs[p]
-        case "class_prefix":
-          stack_def.default_inputs.class_prefix = self.inputs[p]
-        case "class_name":
-          stack_def.default_inputs.class_name = self.inputs[p]
-        case _:
-          if p in stack_def.env_vars.table and isinstance(self.inputs[p], EnvVarsSem):
-              stack_def.env_vars.table[p].path_joined = self.inputs[p].path_joined
-              stack_def.env_vars.table[p].path_parts = self.inputs[p].path_parts
-          elif p in stack_def.default_inputs.extras:
-            stack_def.default_inputs.extras[p] = self.inputs[p]
-          else:
-            raise Exception("Not found.")
-          
-    stack_def.default_inputs.extras["stack_name"] = self.stack_name
-    stack_def.default_inputs.extras["aws_account_id"] = self.aws_account_id
-    stack_def.default_inputs.extras["aws_region"] = self.aws_region
-    stack_def.default_inputs.extras["aws_stack_name"] = self.aws_stack_name
-    stack_def.default_inputs.extras["project"] = self.project
-    stack_def.default_inputs.extras["exe_env"] = self.exe_env
+    super().apply_to(stack_def)
 
     # add children as deps
     for child in self.children:
       if child not in stack_def.deps.table:
-        stack_def.deps.table[child] = DepSem(
+        stack_def.deps.table[child] = SingleDependency(
           assigned_name=child,
           def_name=child,
-          props={},
+          inputs={},
         )
 
 
-
 @dataclass
-class InstancesSem:
-  stack_instance: StackInstanceSem
-  other_instances: OtherInstancesSem
-
-  def to_dict(self) -> Dict[str, Any]:
-    return {
-      "stack_instance": self.stack_instance.to_dict(),
-      "other_instances": self.other_instances.to_dict(),
-    }
+class SingleInstance:
+  stack_instance: SingleStackInstance
+  other_instances: SingleOtherInstance
 
 
+####################
+## DEEP COPY
 
-################
-########## UTILS
-def sem_to_dict(obj: Any) -> Any:
-  if hasattr(obj, "to_dict"):
-    return obj.to_dict()  # our classes
-  if is_dataclass(obj):
-    return asdict(obj)    # fallback for other dataclasses
-  if isinstance(obj, Mapping):
-    return {k: sem_to_dict(v) for k, v in obj.items()}
-  if isinstance(obj, (list, tuple)):
-    return [sem_to_dict(v) for v in obj]
-  return obj
+def deep_copy_def(src: SingleDefinition) -> SingleDefinition:
+  # --- helpers ---
+  def copy_template(t: SingleTemplate) -> SingleTemplate:
+    return SingleTemplate(
+      template_name=t.template_name,
+      template_file=t.template_file,
+      gen_path=t.gen_path,
+      gen_file_name=t.gen_file_name,
+      var_name=t.var_name,
+      class_name=t.class_name,
+      id_prefix=t.id_prefix,
+      name_prefix=t.name_prefix,
+    )
 
+  def copy_envvar(ev: SingleEnvVar) -> SingleEnvVar:
+    return SingleEnvVar(
+      name=ev.name,
+      path_joined=ev.path_joined,
+      path_parts=tuple(ev.path_parts),
+      value=ev.value,
+    )
 
-#### Util for deep copy
+  def copy_inputs(inp_map: Mapping[str | tuple, Value | SingleEnvVar]) -> Dict[str | tuple, Value | SingleEnvVar]:
+    out: Dict[str | tuple, Value | SingleEnvVar] = {}
+    for k, v in inp_map.items():
+      if isinstance(v, SingleEnvVar):
+        out[k] = copy_envvar(v)
+      else:
+        # Value is primitive (str/int/float/bool/None) – safe to reuse
+        out[k] = v
+    return out
 
-def _deep_copy_envvar(ev: EnvVarSem) -> EnvVarSem:
-  return EnvVarSem(
-    name=ev.name,
-    path_joined=ev.path_joined,
-    path_parts=tuple(ev.path_parts),
-    value=ev.value,
-  )
+  def copy_dependency(d: SingleDependency) -> SingleDependency:
+    return SingleDependency(
+      assigned_name=d.assigned_name,
+      def_name=d.def_name,
+      inputs=copy_inputs(d.inputs),
+    )
 
-def _deep_copy_envvars(evs: EnvVarsSem) -> EnvVarsSem:
-  new_table: Dict[str, EnvVarSem] = {k: _deep_copy_envvar(v) for k, v in evs.table.items()}
-  return EnvVarsSem(table=new_table)
+  # --- copy leaf maps ---
+  new_templates_table: Dict[str, SingleTemplate] = {
+    k: copy_template(v) for k, v in src.templates.table.items()
+  }
+  new_envvars_table: Dict[str, SingleEnvVar] = {
+    k: copy_envvar(v) for k, v in src.env_vars.table.items()
+  }
+  new_default_inputs_table: Dict[str, Value] = dict(src.default_inputs.table)
+  new_deps_table: Dict[str, SingleDependency] = {
+    k: copy_dependency(v) for k, v in src.deps.table.items()
+  }
 
-def _deep_copy_default_inputs(di: DefaultInputsSem) -> DefaultInputsSem:
-  return DefaultInputsSem(
-    path=di.path,
-    id_prefix=di.id_prefix,
-    name_prefix=di.name_prefix,
-    class_prefix=di.class_prefix,
-    class_name=di.class_name,
-    extras=dict(di.extras),
-  )
-
-def _deep_copy_dep(dep: DepSem) -> DepSem:
-  def _clone_prop(v: Any) -> Any:
-    # handle both single env-var and a table, plus primitives
-    if isinstance(v, EnvVarSem):
-        return _deep_copy_envvar(v)
-    if isinstance(v, EnvVarsSem):
-        return _deep_copy_envvars(v)
-    # primitives: str/int/float/bool/None
-    return v
-
-  new_props: Dict[str, Any] = {k: _clone_prop(v) for k, v in dep.props.items()}
-  return DepSem(
-    assigned_name=dep.assigned_name,
-    def_name=dep.def_name,
-    props=new_props,
-  )
-
-def _deep_copy_deps(deps: DepsSem) -> DepsSem:
-  new_table: Dict[str, DepSem] = {k: _deep_copy_dep(v) for k, v in deps.table.items()}
-  return DepsSem(table=new_table)
-
-def _deep_copy_templates(tm: TemplateMapSem) -> TemplateMapSem:
-  return TemplateMapSem(table=dict(tm.table))
-
-def deep_copy_def(defn: DefSem) -> DefSem:
-  return DefSem(
-    name=defn.name,
-    templates=_deep_copy_templates(defn.templates),
-    deps=_deep_copy_deps(defn.deps),
-    env_vars=_deep_copy_envvars(defn.env_vars),
-    default_inputs=_deep_copy_default_inputs(defn.default_inputs),
+  # --- reassemble ---
+  return SingleDefinition(
+    name=src.name,
+    templates=TemplateMap(table=new_templates_table),
+    deps=DependencyMap(table=new_deps_table),
+    env_vars=EnvVarMap(table=new_envvars_table),
+    default_inputs=DefaultInputMap(table=new_default_inputs_table),
   )

@@ -4,25 +4,17 @@ import * as cdk from "aws-cdk-lib";
 // Config imports
 import { EnvConfig } from "@base/config/configSchema";
 
-// Root constructs imports
-//
-{% for rc in root_constructs -%}
-import { {{rc.class}} } from "@base/{{rc.path}}";
-{% endfor %}
-
-
-// Substacks imports 
-//
-{% for subs in substacks -%}
-import { {{subs.class}} } from "@base/{{subs.path}}";
+// Construct imports
+{% for ci in constructs -%}
+import { {{ci.class}} } from "@base{{ci.path}}";
 {% endfor %}
 
 
 export class StackRoot extends cdk.Stack {
   // Holder of all root constructs
   //
-  {% for rc in root_constructs -%}
-  public readonly {{ rc.instance_name }}: {{rc.class}};
+  {% for c in constructs -%}
+    public readonly {{ c.instance_name }}: {{c.class}};
   {% endfor %}
 
   constructor(

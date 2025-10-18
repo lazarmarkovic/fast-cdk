@@ -1,0 +1,93 @@
+{% if render_class_def %}
+// External imports
+import * as cdk from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
+import * as codedeploy from "aws-cdk-lib/aws-codedeploy";
+
+// Config imports
+import { EnvConfig } from "@base/config/configSchema";
+
+// Root imports
+import { {{git_oidc_from_resource.class}} } from "@base/{{git_oidc_from_resource.path}}";
+
+// Local imports
+import { {{s3_bucket.class}} } from "@base/{{s3_bucket.path}}";
+import { {{cloudfront.class}} } from "@base/{{cloudfront.path}}";
+
+
+export class {{class_name}} {
+  public readonly codeDeployApp: codedeploy.ServerApplication;
+  public readonly deploymentGroup: codedeploy.ServerDeploymentGroup;
+  public readonly gitPlatformActionsRole: iam.Role;
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+
+    rootGitOidc: {{git_oidc_from_resource.class}},
+    s3: {{s3_bucket.class}},
+    scfCloudFront: {{cloudfront.class}},
+  ) {
+    this.gitPlatformActionsRole = new iam.Role(mainStack, "{{id_prefix}}GitPlatformActionsDeployRole", {
+      roleName: "{{name_prefix}}.github-actions-deploy-role",
+      assumedBy: new iam.FederatedPrincipal(
+        rootGitOidc.oidcProvider.openIdConnectProviderArn,
+        {
+          "StringEquals": {
+            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+            "token.actions.githubusercontent.com:sub": `repo:${envConfig.{{git_owner}}}/${envConfig.{{git_repo_name}}}:ref:refs/heads/${envConfig.{{git_repo_pull_branch_name}}}`,
+          },
+        },
+        "sts:AssumeRoleWithWebIdentity"
+      ),
+
+      maxSessionDuration: cdk.Duration.hours(1),
+    });
+
+
+    this.gitPlatformActionsRole.addToPolicy(new iam.PolicyStatement({
+      actions: [
+        "cloudfront:CreateInvalidation",
+      ],
+      resources: [`arn:aws:cloudfront::${mainStack.account}:distribution/${scfCloudFront.cfDist.distributionId}`],
+    }));
+    this.gitPlatformActionsRole.addToPolicy(new iam.PolicyStatement({
+      actions: [
+        "s3:DeleteObject",
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      resources: [`arn:aws:s3:::${s3.frontendBucket.bucketName}/*`],
+    }));
+    this.gitPlatformActionsRole.addToPolicy(new iam.PolicyStatement({
+      actions: ["s3:ListBucket"],
+      resources: [`arn:aws:s3:::${s3.frontendBucket.bucketName}`],
+    }));
+
+
+    // Outputs - generated after deployment
+    new cdk.CfnOutput(mainStack, "{{id_prefix}}OutGitPlatformActionsRoleArn", {
+      description: "FA ARN of the GitHub OIDC IAM Role",
+      value: this.gitPlatformActionsRole.roleArn
+    });
+
+    new cdk.CfnOutput(mainStack, "{{id_prefix}}OutS3BucketName", {
+      description: "FA S3 Bucket Name",
+      value: s3.frontendBucket.bucketName
+    });
+
+    new cdk.CfnOutput(mainStack, "{{id_prefix}}OutCfDistributionId", {
+      description: "FA CloudFront Distribution ID",
+      value: scfCloudFront.cfDist.distributionId
+    });
+  }
+}
+{%- else -%} new {{class_name}}(
+  mainStack, 
+  envConfig,
+
+  this.{{ git_oidc_from_resource.var_name }},
+  this.{{ s3_bucket.var_name }},
+  this.{{ cloudfront.var_name }},
+);
+{% endif %}

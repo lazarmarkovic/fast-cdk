@@ -40,7 +40,7 @@ class GraphSemanticProcessor:
       print("Definition name: " + definition.semantic_data.name)
 
       try:
-        new_node = GraphNode(definition.semantic_data, NodeType.DEFINITION)
+        new_node = GraphNode(definition.semantic_data, NodeType.DEFINITION, definition.base_path)
         self.graph.add_node(new_node)
       except NodeAlreadyExistsError as err:
         raise TextXSemanticError(f"Definition with name '{definition.semantic_data.name}' already exists.", **get_location(definition)) from err
@@ -61,7 +61,7 @@ class GraphSemanticProcessor:
             def_deep_copy = deep_copy_def(node_to_copy.definition)
             dep.apply_to(def_deep_copy)
 
-            new_node = GraphNode(def_deep_copy, NodeType.DEFINITION, assigned_name=dep.assigned_name, edges=node_to_copy.edges)
+            new_node = GraphNode(def_deep_copy, NodeType.DEFINITION, node_to_copy.base_path, assigned_name=dep.assigned_name, edges=node_to_copy.edges)
             self.graph.add_node(new_node)
 
     # Now add assigned nodes and edges
@@ -113,7 +113,7 @@ class GraphSemanticProcessor:
 
       # Make new node with deep copy
       print("Creating instance of: " + oi_obj.def_name + " with new assigned name: " + oi_obj.assigned_name)
-      new_node = GraphNode(def_deep_copy, NodeType.INSTANCE, assigned_name=oi_obj.assigned_name, edges=node_to_copy.edges)
+      new_node = GraphNode(def_deep_copy, NodeType.INSTANCE, node_to_copy.base_path, assigned_name=oi_obj.assigned_name, edges=node_to_copy.edges)
       self.graph.add_node(new_node)
 
     
@@ -149,19 +149,21 @@ class GraphSemanticProcessor:
 
           # Make new node with deep copy
           print(" - Creating instance of: " + dov_oi_obj.def_name + " with new assigned name: " + dov_oi_obj.assigned_name)
-          new_node = GraphNode(def_deep_copy, NodeType.INSTANCE, assigned_name=dov_oi_obj.assigned_name, edges=node_to_copy.edges)
+          new_node = GraphNode(def_deep_copy, NodeType.INSTANCE, node_to_copy.base_path, assigned_name=dov_oi_obj.assigned_name, edges=node_to_copy.edges)
           self.graph.add_node(new_node)
           dov_node = new_node
         else:
           print(" - Dep override node already exists: " + dov_oi_key)
 
         # Find the nodes which need to be replaced
-        for edge in oi_node.edges:
-          edge_node = self.graph.get_node(edge)
-          if edge_node.definition.name == dov_node.definition.name:
-            print(f" -> Replacing parent edge from {oi_node.assigned_name} to {edge_node.assigned_name}")
-            self.graph.replace_edge(oi_node.assigned_name, edge_node.assigned_name, dov_node.assigned_name)
-        print("--------\n")
+        # only if the node is present
+        if hasattr(oi_node, "edges"):
+          for edge in oi_node.edges:
+            edge_node = self.graph.get_node(edge)
+            if edge_node.definition.name == dov_node.definition.name:
+              print(f" -> Replacing parent edge from {oi_node.assigned_name} to {edge_node.assigned_name}")
+              self.graph.replace_edge(oi_node.assigned_name, edge_node.assigned_name, dov_node.assigned_name)
+          print("--------\n")
               
 
 
@@ -169,9 +171,10 @@ class GraphSemanticProcessor:
 
     ############
     # Add stack instance
-    stack_def_deep_copy = deep_copy_def(self.graph.get_node("stack").definition)
+    stack_node = self.graph.get_node("stack")
+    stack_def_deep_copy = deep_copy_def(stack_node.definition)
     self.stack_instance.apply_to_stack_def(stack_def_deep_copy)
-    new_stack_node = GraphNode(stack_def_deep_copy, NodeType.INSTANCE, assigned_name=self.stack_instance.stack_name, edges=[])
+    new_stack_node = GraphNode(stack_def_deep_copy, NodeType.INSTANCE, stack_node.base_path, assigned_name=self.stack_instance.stack_name, edges=[])
     self.graph.add_node(new_stack_node)
 
     # Add stack instance children as edges in graph

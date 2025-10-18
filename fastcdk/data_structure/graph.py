@@ -1,4 +1,6 @@
+from collections.abc import Iterable
 from enum import Enum
+from typing import Optional
 
 from fastcdk.data_structure.errors import GraphCycleError, NodeAlreadyExistsError, NodeNotFoundError
 
@@ -10,8 +12,9 @@ class NodeType(Enum):
 
 
 class GraphNode:
-  def __init__(self, definition, node_type, instance=None, assigned_name=None, edges=None):
+  def __init__(self, definition, node_type, base_path, instance=None, assigned_name=None, edges=None):
     self.type: NodeType = node_type
+    self.base_path = base_path
     self.edges: list[GraphNode] = []
     self.definition = definition
     self.instance = instance
@@ -103,3 +106,98 @@ class DirectedAcyclicGraph:
       from_node.edges.append(new_to_node_name)
     else:
       raise NodeNotFoundError(f"Edge from {from_node_name} to {old_to_node_name} does not exist.")
+    
+
+  def reachable_from(self, start_name: str):
+    """
+    DFS over outgoing edges from `start` and collect all nodes reachable.
+    """
+    if start_name not in self.graph:
+      raise NodeNotFoundError(start_name)
+
+    visited: set[str] = set()
+    stack: list[str] = [start_name]
+
+    while stack:
+      cur = stack.pop()
+      if cur in visited:
+        continue
+      visited.add(cur)
+      for edge in self.graph[cur].edges:
+        if edge is None:
+          continue
+        if edge in self.graph and edge not in visited:
+          stack.append(edge)
+
+    return visited
+  
+
+  # Kahn’s algorithm run “from the sinks”
+  def usage_layers(self, start_name: str) -> list[list[str]]:
+    """
+    Produce sink-first layers:
+      L0: nodes with outdegree 0,
+      L1: nodes whose outgoing edges only point into L0,
+      L2: nodes whose outgoing edges only point into L0∪L1,
+      ...
+    """
+
+    if start_name not in self.graph:
+      raise NodeNotFoundError(start_name)
+    node_set = self.reachable_from(start_name)
+
+    # build forward and reverse adjacency within the working set
+    adj = {u: set() for u in node_set}
+    rev = {u: set() for u in node_set}
+
+    for u in node_set:
+      for edge in self.graph[u].edges:
+        if edge is None or edge not in node_set:
+          continue
+        adj[u].add(edge)
+        rev[edge].add(u)
+
+    # compute outdegrees (within the working set)
+    outdeg = {u: len(adj[u]) for u in node_set}
+
+    # initial sinks
+    layer = [u for u, d in outdeg.items() if d == 0]
+    layer.sort()
+      
+    layers = []
+    removed = set(layer)
+
+    if not layer and node_set:
+      # no sinks found ⇒ cycle inside `node_set`
+      raise GraphCycleError("〈subgraph〉", "〈subgraph〉")
+
+    while layer:
+      layers.append(layer)
+      # peel current sinks and update parents' outdegree
+      next_layer_set = set()
+      for sink in layer:
+        for parent in rev[sink]:
+          if outdeg[parent] == 0:
+            continue
+          outdeg[parent] -= 1
+          if outdeg[parent] == 0:
+            next_layer_set.add(parent)
+
+      # prepare next layer
+      layer = sorted(next_layer_set)
+      removed.update(layer)
+
+    # safety: if anything remains, it's a cycle
+    if len(removed) != len(node_set):
+      raise GraphCycleError("〈subgraph〉", "〈subgraph〉")
+    
+    return layers
+
+
+def usage_order(self, start: str) -> list[str]:
+    """
+    Flattened sink-first order (L0, then L1, ...).
+    """
+    layers = self.usage_layers(start)
+    flat_names = [name for group in layers for name in group]
+    return flat_names

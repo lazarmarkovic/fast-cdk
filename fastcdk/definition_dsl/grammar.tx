@@ -6,114 +6,126 @@ Fcdk:
 ;
 
 Definitions: 
-  definitions*=Definition
+  definitions*=SingleDefinition
 ;
 
-Definition:
+SingleDefinition:
   name=ID "{"
     template_map=TemplateMapSection
-    deps=DepsSection?
-    env_vars=EnvVarsSection?
-    default_inputs=DefaultInputsSection
+    deps=DependencyMapSection?
+    env_vars=EnvVarMapSection?
+    default_inputs=DefaultInputMapSection?
   "}"
 ;
+
+///////////////////////
+// Stuff for Template
 TemplateMapSection:
   "templates" "{" 
-    entries*=TemplateMapEntry
+    entries*=SingleTemplate
   "}"
 ;
-TemplateMapEntry: template_file=FileName "=" generated_file=FileName ;  
+SingleTemplate: 
+  template_name=ID "{"  
+    template_file=TemplateFileAssign 
+    gen_path=GenPathAssign
+    gen_file_name=GenFileNameAssign
 
-
-DepsSection:
-  "deps" "{"
-    entries*=DepEntry
-  "}"
-;
-DepEntry:
-    assigned_name=ID "=" def_name=ID ( "{" props+=DepEntryInputAssign "}" )?
-  | assigned_name=ID
-;
-DepEntryInputAssign: 
-    key=ID "=" ref=RefPath
-  | key=ID "=" val=Value 
-;
-
-EnvVarsSection:
-  "env_vars" "{"
-    entries*=EnvVar
-  "}"
-;
-
-EnvVar: key=ID "=" ref=RefPath "=" val=PATH ;
-RefPath: first=ID "." rest+=ID["."] ;
-
-DefaultInputsSection:
-  "default_inputs" "{"
-    path=PathAssign
+    var_name=VarNameAssign
+    class_name=ClassNameAssign
     id_prefix=IdPrefixAssign
     name_prefix=NamePrefixAssign
-    class_prefix=ClassPrefixAssign
-    class_name=ClassNameAssign
+  "}"  
+;
+TemplateFileAssign: "template_file" "=" val=FileName ;
+GenPathAssign: "gen_path" "=" val=PATH ;
+GenFileNameAssign: "gen_file_name" "=" val=FileName ;
+VarNameAssign: "var_name" "=" val=ID ;
+ClassNameAssign: "class_name" "=" val=ID ;
+IdPrefixAssign: "id_prefix" "=" val=ID ;
+NamePrefixAssign: "name_prefix" "=" val=/[\w-]+/ ;
 
-    inputs*=DefaultInputsInputAssign
+
+///////////////////////
+// Stuff for Deps
+DependencyMapSection:
+  "deps" "{"
+    entries*=SingleDependency
   "}"
 ;
-DefaultInputsInputAssign: 
-  key=ID "=" val=Value 
+SingleDependency:
+    assigned_name=ID "=" def_name=ID ( "{" inputs+=SingleGeneralInputAssign "}" )?
+  | assigned_name=ID
+;
+SingleGeneralInputAssign: 
+    key=ID "=" ref=RefPath "=" val=PATH
+  | key=ID "=" ref=RefPath
+  | key=ID "=" val=Value
+  | template_name=ID "." template_field=TemplateField
+;
+TemplateField:
+    TemplateFileAssign
+  | GenPathAssign
+  | GenFileNameAssign
+  | VarNameAssign
+  | ClassNameAssign
+  | IdPrefixAssign
+  | NamePrefixAssign
 ;
 
-PathAssign: "path" "=" val=PATH ;
-IdPrefixAssign: "id_prefix" "=" val=Value ;
-NamePrefixAssign: "name_prefix" "=" val=Value ;
-ClassPrefixAssign: "class_prefix" "=" val=Value ;
-ClassNameAssign: "class_name" "=" val=Value ;
+
+
+///////////////////////
+// Stuff for Env Vars
+EnvVarMapSection:
+  "env_vars" "{"
+    entries*=SingleEnvVar
+  "}"
+;
+
+SingleEnvVar: key=ID "=" ref=RefPath "=" val=PATH ;
+RefPath: first=ID "." rest+=ID["."] ;
 
 
 
+///////////////////////
+// Stuff for Default Inputs
+DefaultInputMapSection:
+  "default_inputs" "{"
+    inputs*=DefaultInputAssign
+  "}"
+;
+DefaultInputAssign:
+  key=ID "=" val=PATH
+;
 
 
 ////////////////////////////////
+////////////////////////////////
 /////////////// Instance Grammar
 Instances:
-    instances*=Instance
+    instances*=SingleInstance
 ;
 
-Instance:
-  stack_instance=StackInstance
-  other_instances*=OtherInstances
+SingleInstance:
+  stack_instance=SingleStackInstance
+  other_instances*=SingleOtherInstance
 ;
 
-StackInstance:
+SingleStackInstance:
   stack_name=ID "=" "stack"
   "{"
-      aws_account_id=AwsAccountId
-      aws_region=AwsRegion
-      aws_stack_name=AwsStackName
-      project=Project
-      exe_env=ExeEnv
-      
+      inputs*=SingleGeneralInputAssign
       children*=Child
   "}"
 ;
 Child: name=ID ;
 
-AwsAccountId: "aws_account_id" "=" val=AWSAccountIdForm ;
-AwsRegion: "aws_region" "=" val=AWSRegionForm ;
-AwsStackName: "aws_stack_name" "=" val=Value ;
-Project: "project" "=" val=Value ;
-ExeEnv: "exe_env" "=" val=Value ;
 
-
-IdPrefixAssign: "id_prefix" "=" val=Value ;
-NamePrefixAssign: "name_prefix" "=" val=Value ;
-ClassPrefixAssign: "class_prefix" "=" val=Value ;
-ClassNameAssign: "class_name" "=" val=Value ;
-
-OtherInstances:
+SingleOtherInstance:
   assigned_name=ID "=" def_name=ID
   "{"
-    inputs*=DepEntryInputAssign
+    inputs*=SingleGeneralInputAssign
     dep_overrides*=DepOverride
   "}"
 ;
@@ -122,8 +134,6 @@ DepOverride: name=ID ;
 
 ////////////////////////////////
 /////////////// Common matchings
-AWSAccountIdForm: /\d{12}/ ;
-AWSRegionForm: /(us|af|ap|ca|cn|eu|il|me|sa)(-[a-z]+)+-\d+/ ;
 FileName: /[\w-]+(\.[\w-]+)+/ ;
 PATH: /[A-Za-z0-9_\-\.\/\\:]+/ ;
 Value:
