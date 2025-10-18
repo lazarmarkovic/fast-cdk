@@ -1,3 +1,4 @@
+
 /fast_cdk_venv
 
 # Byte-compiled / optimized / DLL files
@@ -16,7 +17,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+fastcdk/lib/
 lib64/
 parts/
 sdist/
