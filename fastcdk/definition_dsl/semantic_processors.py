@@ -75,6 +75,7 @@ class SemanticProcessors:
 
   def single_template(self, entity):
     entity.semantic_data = SingleTemplate(
+      import_path = entity.gen_path.val + "/" + entity.gen_file_name.val if entity.gen_path.val != "/" else "/" + entity.gen_file_name.val,
       template_name=entity.template_name,
       template_file=entity.template_file.val,
       gen_path=entity.gen_path.val,
@@ -136,6 +137,7 @@ class SemanticProcessors:
         raise TextXSemanticError(f"Duplicate input variable '{".".join(single_input.key)}' in dep_entry section.", **get_location(i))
       inputs_dict[single_input.key] = single_input
     entity.semantic_data = SingleDependency(
+      original_assigned_name=entity.assigned_name,
       assigned_name=entity.assigned_name,
       def_name=entity.def_name if entity.def_name != '' else entity.assigned_name,
       inputs=inputs_dict

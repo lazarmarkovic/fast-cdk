@@ -21,6 +21,7 @@ class SingleDefinition:
 
 @dataclass
 class SingleTemplate:
+  import_path: str
   template_name: str
   template_file: str
   gen_path: str
@@ -85,6 +86,7 @@ class ApplicableToDef:
 
 @dataclass
 class SingleDependency(ApplicableToDef):
+  original_assigned_name: str
   assigned_name: str
   def_name: str
   inputs: Mapping[str | tuple, SingleGeneralInput] = field(default_factory=dict)
@@ -126,6 +128,7 @@ class SingleStackInstance(ApplicableToDef):
     for child in self.children:
       if child not in stack_def.deps.table:
         stack_def.deps.table[child] = SingleDependency(
+          original_assigned_name=child,
           assigned_name=child,
           def_name=child,
           inputs={},
@@ -145,6 +148,7 @@ def deep_copy_def(src: SingleDefinition) -> SingleDefinition:
   # --- helpers ---
   def copy_template(t: SingleTemplate) -> SingleTemplate:
     return SingleTemplate(
+      import_path=t.import_path,
       template_name=t.template_name,
       template_file=t.template_file,
       gen_path=t.gen_path,
@@ -175,6 +179,7 @@ def deep_copy_def(src: SingleDefinition) -> SingleDefinition:
 
   def copy_dependency(d: SingleDependency) -> SingleDependency:
     return SingleDependency(
+      original_assigned_name=d.original_assigned_name,
       assigned_name=d.assigned_name,
       def_name=d.def_name,
       inputs=copy_inputs(d.inputs),

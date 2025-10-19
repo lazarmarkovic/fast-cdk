@@ -1,7 +1,7 @@
 git_oidc_from_resource {
 
   templates {
-    git_oidc {
+    this {
       template_file = git_oidc.j2
       gen_path = /
       gen_file_name = git-oidc.root.ts

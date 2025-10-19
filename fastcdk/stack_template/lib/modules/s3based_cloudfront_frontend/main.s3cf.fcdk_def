@@ -1,7 +1,7 @@
 s3_based_cloudfront_full_frontend {
 
   templates {
-    main {
+    this {
       template_file = main.s3cf.j2
       gen_path = /s3based-cloudfront-frontend
       gen_file_name = main.s3cf.ts

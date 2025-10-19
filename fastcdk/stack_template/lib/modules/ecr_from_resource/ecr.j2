@@ -7,7 +7,7 @@ import * as ecr from "aws-cdk-lib/aws-ecr";
 import { EnvConfig } from "@base/config/configSchema";
 
 
-export class {{class_name}} {
+export class {{this.class_name}} {
   public readonly ecrRepo: ecr.IRepository;
   public readonly containerName: string
 
@@ -17,14 +17,14 @@ export class {{class_name}} {
   ) {
     this.ecrRepo = ecr.Repository.fromRepositoryArn(
       mainStack,
-      "{{id_prefix}}EcrRepo",
-      envConfig.{{ecr_repo_arn}}
+      "{{this.id_prefix}}EcrRepo",
+      envConfig.{{this.ecr_repo_arn}}
     );
-    this.containerName = "{{name_prefix}}-container";
+    this.containerName = "{{this.name_prefix}}-container";
 
     // Tag resources
-    cdk.Tags.of(this.ecrRepo).add("Name", "{{name_prefix}}.ecr-repo");
+    cdk.Tags.of(this.ecrRepo).add("Name", "{{this.name_prefix}}.ecr-repo");
   }
 }
-{%- else -%} new {{class_name}}(mainStack, envConfig);
+{%- else -%} new {{this.class_name}}(mainStack, envConfig);
 {% endif %}

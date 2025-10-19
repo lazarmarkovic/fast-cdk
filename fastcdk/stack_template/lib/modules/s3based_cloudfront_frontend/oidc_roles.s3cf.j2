@@ -8,14 +8,14 @@ import * as codedeploy from "aws-cdk-lib/aws-codedeploy";
 import { EnvConfig } from "@base/config/configSchema";
 
 // Root imports
-import { {{git_oidc_from_resource.class}} } from "@base/{{git_oidc_from_resource.path}}";
+import { {{git_oidc_from_resource.class_name}} } from "@base/{{git_oidc_from_resource.import_path}}";
 
 // Local imports
-import { {{s3_bucket.class}} } from "@base/{{s3_bucket.path}}";
-import { {{cloudfront.class}} } from "@base/{{cloudfront.path}}";
+import { {{s3_bucket.class_name}} } from "@base/{{s3_bucket.import_path}}";
+import { {{cloudfront.class_name}} } from "@base/{{cloudfront.import_path}}";
 
 
-export class {{class_name}} {
+export class {{this.class_name_name}} {
   public readonly codeDeployApp: codedeploy.ServerApplication;
   public readonly deploymentGroup: codedeploy.ServerDeploymentGroup;
   public readonly gitPlatformActionsRole: iam.Role;
@@ -24,18 +24,18 @@ export class {{class_name}} {
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
 
-    rootGitOidc: {{git_oidc_from_resource.class}},
-    s3: {{s3_bucket.class}},
-    scfCloudFront: {{cloudfront.class}},
+    rootGitOidc: {{git_oidc_from_resource.class_name}},
+    s3: {{s3_bucket.class_name}},
+    scfCloudFront: {{cloudfront.class_name}},
   ) {
-    this.gitPlatformActionsRole = new iam.Role(mainStack, "{{id_prefix}}GitPlatformActionsDeployRole", {
-      roleName: "{{name_prefix}}.github-actions-deploy-role",
+    this.gitPlatformActionsRole = new iam.Role(mainStack, "{{this.id_prefix}}GitPlatformActionsDeployRole", {
+      roleName: "{{this.name_prefix}}.github-actions-deploy-role",
       assumedBy: new iam.FederatedPrincipal(
         rootGitOidc.oidcProvider.openIdConnectProviderArn,
         {
           "StringEquals": {
             "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-            "token.actions.githubusercontent.com:sub": `repo:${envConfig.{{git_owner}}}/${envConfig.{{git_repo_name}}}:ref:refs/heads/${envConfig.{{git_repo_pull_branch_name}}}`,
+            "token.actions.githubusercontent.com:sub": `repo:${envConfig.{{this.git_owner}}}/${envConfig.{{this.git_repo_name}}}:ref:refs/heads/${envConfig.{{this.git_repo_pull_branch_name}}}`,
           },
         },
         "sts:AssumeRoleWithWebIdentity"
@@ -66,23 +66,23 @@ export class {{class_name}} {
 
 
     // Outputs - generated after deployment
-    new cdk.CfnOutput(mainStack, "{{id_prefix}}OutGitPlatformActionsRoleArn", {
+    new cdk.CfnOutput(mainStack, "{{this.id_prefix}}OutGitPlatformActionsRoleArn", {
       description: "FA ARN of the GitHub OIDC IAM Role",
       value: this.gitPlatformActionsRole.roleArn
     });
 
-    new cdk.CfnOutput(mainStack, "{{id_prefix}}OutS3BucketName", {
+    new cdk.CfnOutput(mainStack, "{{this.id_prefix}}OutS3BucketName", {
       description: "FA S3 Bucket Name",
       value: s3.frontendBucket.bucketName
     });
 
-    new cdk.CfnOutput(mainStack, "{{id_prefix}}OutCfDistributionId", {
+    new cdk.CfnOutput(mainStack, "{{this.id_prefix}}OutCfDistributionId", {
       description: "FA CloudFront Distribution ID",
       value: scfCloudFront.cfDist.distributionId
     });
   }
 }
-{%- else -%} new {{class_name}}(
+{%- else -%} new {{this.class_name}}(
   mainStack, 
   envConfig,
 

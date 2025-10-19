@@ -9,15 +9,15 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { EnvConfig } from "@base/config/configSchema";
 
 
-export class {{class_name}} {
+export class {{this.class_name}} {
   public readonly frontendBucket: s3.Bucket;
 
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
   ) {
-    this.frontendBucket = new s3.Bucket(mainStack, "{{id_prefix}}S3Bucket", {
-      bucketName: envConfig.{{s3_bucket_name}},
+    this.frontendBucket = new s3.Bucket(mainStack, "{{this.id_prefix}}S3Bucket", {
+      bucketName: envConfig.{{this.s3_bucket_name}},
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       publicReadAccess: true,
@@ -39,14 +39,14 @@ export class {{class_name}} {
     });
     policyStatement.addCondition(
       "StringEquals",
-      { "aws:UserAgent": envConfig.{{cloudfront_connection_secret}} }
+      { "aws:UserAgent": envConfig.{{this.cloudfront_connection_secret}} }
     );
     this.frontendBucket.addToResourcePolicy(policyStatement);
 
 
     // Tag resources
-    cdk.Tags.of(this.frontendBucket).add("Name", "{{name_prefix}}.s3-bucket");
+    cdk.Tags.of(this.frontendBucket).add("Name", "{{this.name_prefix}}.s3-bucket");
   }
 }
-{%- else -%} new {{class_name}}(mainStack, envConfig);
+{%- else -%} new {{this.class_name}}(mainStack, envConfig);
 {% endif %}

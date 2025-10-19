@@ -7,7 +7,7 @@ import * as r53 from "aws-cdk-lib/aws-route53";
 import { EnvConfig } from "@base/config/configSchema";
 
 
-export class {{class_name}} {
+export class {{this.class_name}} {
   public readonly appHostedZone: r53.IHostedZone;
 
   constructor(
@@ -16,13 +16,13 @@ export class {{class_name}} {
   ) {
     this.appHostedZone = r53.HostedZone.fromLookup(
       mainStack,
-      "{{id_prefix}}HostedZone",
-      { domainName: envConfig.{{base_domain_name}} }
+      "{{this.id_prefix}}HostedZone",
+      { domainName: envConfig.{{this.base_domain_name}} }
     );
 
     // Tag resources
-    cdk.Tags.of(this.appHostedZone).add("Name", "{{name_prefix}}.hosting-zone");
+    cdk.Tags.of(this.appHostedZone).add("Name", "{{this.name_prefix}}.hosting-zone");
   }
 }
-{%- else -%} new {{class_name}}(mainStack, envConfig);
+{%- else -%} new {{this.class_name}}(mainStack, envConfig);
 {% endif %}

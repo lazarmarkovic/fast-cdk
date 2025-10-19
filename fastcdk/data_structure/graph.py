@@ -15,6 +15,7 @@ class GraphNode:
   def __init__(self, definition, node_type, base_path, instance=None, assigned_name=None, edges=None):
     self.type: NodeType = node_type
     self.base_path = base_path
+    self.original_assigned_name = assigned_name if assigned_name is not None else definition.name
     self.edges: list[GraphNode] = []
     self.definition = definition
     self.instance = instance

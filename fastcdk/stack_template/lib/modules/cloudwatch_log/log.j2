@@ -7,21 +7,21 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import { EnvConfig } from "@base/config/configSchema";
 
 
-export class {{class_name}} {
+export class {{this.class_name}} {
   public readonly cloudWatchLogGroup: logs.LogGroup;
 
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
   ) {
-    this.cloudWatchLogGroup = new logs.LogGroup(mainStack, "{{id_prefix}}CwLogGroup", {
-      logGroupName: "{{name_prefix}}.log-group",
+    this.cloudWatchLogGroup = new logs.LogGroup(mainStack, "{{this.id_prefix}}CwLogGroup", {
+      logGroupName: "{{this.name_prefix}}.log-group",
       retention: logs.RetentionDays.THREE_MONTHS,
     });
 
     // Tag resources
-    cdk.Tags.of(this.cloudWatchLogGroup).add("Name", "{{name_prefix}}.log-group");
+    cdk.Tags.of(this.cloudWatchLogGroup).add("Name", "{{this.name_prefix}}.log-group");
   }
 }
-{%- else -%} new {{class_name}}(mainStack, envConfig);
+{%- else -%} new {{this.class_name}}(mainStack, envConfig);
 {% endif %}

@@ -6,103 +6,103 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 // Config imports
 import { EnvConfig } from "@base/config/configSchema";
 
-export class {{class_name}} {
+export class {{this.class_name}} {
   public readonly vpc: ec2.Vpc;
-  {%- if add_public_subnet %}
+  {%- if this.add_public_subnet %}
   public readonly publicVpcSubnetsSelection: ec2.SubnetSelection;
   public readonly publicSubnets: ec2.ISubnet[];
   {%- endif %}
-  {%- if add_private_with_egress_subnet %}
+  {%- if this.add_private_with_egress_subnet %}
   public readonly privateWithEgressVpcSubnetsSelection: ec2.SubnetSelection;
   public readonly privateWithEgressSubnets: ec2.ISubnet[];
   {%- endif %}
-  {%- if add_private_isolated_subnet %}
+  {%- if this.add_private_isolated_subnet %}
   public readonly privateIsolatedVpcSubnetsSelection: ec2.SubnetSelection;
   public readonly privateIsolatedSubnets: ec2.ISubnet[];
   {%- endif %}
 
   constructor(mainStack: cdk.Stack, envConfig: EnvConfig) {
-    this.vpc = new ec2.Vpc(mainStack, "{{id_prefix}}VPC", {
-      vpcName: "{{name_prefix}}.vpc",
-      ipAddresses: ec2.IpAddresses.cidr(envConfig.{{vpc_cidr}}),
-      maxAzs: {{ max_azs | int }},
-      natGateways: {{ nat_gateways | int }},
-      enableDnsSupport: {{ enable_dns_support | lower }},
-      enableDnsHostnames: {{ enable_dns_host_names | lower }},
+    this.vpc = new ec2.Vpc(mainStack, "{{this.id_prefix}}VPC", {
+      vpcName: "{{this.name_prefix}}.vpc",
+      ipAddresses: ec2.IpAddresses.cidr(envConfig.{{this.vpc_cidr}}),
+      maxAzs: {{ this.max_azs | int }},
+      natGateways: {{ this.nat_gateways | int }},
+      enableDnsSupport: {{ this.enable_dns_support | lower }},
+      enableDnsHostnames: {{ this.enable_dns_host_names | lower }},
       subnetConfiguration: [
         {%- set comma = joiner() -%}
-        {%- if add_public_subnet %}{{ comma() }}
+        {%- if this.add_public_subnet %}{{ comma() }}
         {
-          name: "{{name_prefix}}.vpc.public.subnet",
+          name: "{{this.name_prefix}}.vpc.public.subnet",
           subnetType: ec2.SubnetType.PUBLIC,
         }
         {%- endif -%}
-        {%- if add_private_with_egress_subnet %}{{ comma() }}
+        {%- if this.add_private_with_egress_subnet %}{{ comma() }}
         {
-          name: "{{name_prefix}}.vpc.private-with-nat.subnet",
+          name: "{{this.name_prefix}}.vpc.private-with-nat.subnet",
           subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
         }
         {%- endif -%}
-        {%- if add_private_isolated_subnet %}{{ comma() }}
+        {%- if this.add_private_isolated_subnet %}{{ comma() }}
         {
-          name: "{{name_prefix}}.vpc.private-isolated.subnet",
+          name: "{{this.name_prefix}}.vpc.private-isolated.subnet",
           subnetType: ec2.SubnetType.PRIVATE_ISOLATED,
         }
         {%- endif %}
       ],
     });
 
-    {%- if add_public_subnet %}
+    {%- if this.add_public_subnet %}
     this.publicVpcSubnetsSelection = this.vpc.selectSubnets({ subnetType: ec2.SubnetType.PUBLIC });
     this.publicSubnets = this.publicVpcSubnetsSelection.subnets || [];
-    {%- endif %}
+    {% endif %}
 
-    {%- if add_private_with_egress_subnet %}
+    {%- if this.add_private_with_egress_subnet %}
     this.privateWithEgressVpcSubnetsSelection = this.vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS });
     this.privateWithEgressSubnets = this.privateWithEgressVpcSubnetsSelection.subnets || [];
-    {%- endif %}
+    {% endif %}
 
-    {%- if add_private_isolated_subnet %}
+    {%- if this.add_private_isolated_subnet %}
     this.privateIsolatedVpcSubnetsSelection = this.vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE_ISOLATED });
     this.privateIsolatedSubnets = this.privateIsolatedVpcSubnetsSelection.subnets || [];
-    {%- endif %}
+    {% endif %}
 
-    {%- if add_s3_endpoint %}
+    {%- if this.add_s3_endpoint %}
     {#- only include selections that exist -#}
     const endpointSubnets: ec2.SubnetSelection[] = [
       {%- set comma = joiner() -%}
-      {%- if add_public_subnet %}{{ comma() }} this.publicVpcSubnetsSelection{%- endif -%}
-      {%- if add_private_with_egress_subnet %}{{ comma() }} this.privateWithEgressVpcSubnetsSelection{%- endif -%}
-      {%- if add_private_isolated_subnet %}{{ comma() }} this.privateIsolatedVpcSubnetsSelection{%- endif -%}
+      {%- if this.add_public_subnet %}{{ comma() }} this.publicVpcSubnetsSelection{%- endif -%}
+      {%- if this.add_private_with_egress_subnet %}{{ comma() }} this.privateWithEgressVpcSubnetsSelection{%- endif -%}
+      {%- if this.add_private_isolated_subnet %}{{ comma() }} this.privateIsolatedVpcSubnetsSelection{%- endif -%}
     ];
-    this.vpc.addGatewayEndpoint("{{id_prefix}}S3Endpoint", {
+    this.vpc.addGatewayEndpoint("{{this.id_prefix}}S3Endpoint", {
       service: ec2.GatewayVpcEndpointAwsService.S3,
       subnets: endpointSubnets,
     });
     {%- endif %}
 
     // Resource tagging section
-    cdk.Tags.of(this.vpc).add("Name", "{{name_prefix}}.vpc");
+    cdk.Tags.of(this.vpc).add("Name", "{{this.name_prefix}}.vpc");
 
-    {%- if add_public_subnet %}
+    {%- if this.add_public_subnet %}
     for (const subnet of this.publicSubnets) {
-      cdk.Tags.of(subnet).add("Name", "{{name_prefix}}.vpc.public.subnet-${subnet.availabilityZone.slice(-1)}");
+      cdk.Tags.of(subnet).add("Name", "{{this.name_prefix}}.vpc.public.subnet-${subnet.availabilityZone.slice(-1)}");
     }
     {%- endif %}
 
-    {%- if add_private_with_egress_subnet %}
+    {%- if this.add_private_with_egress_subnet %}
     for (const subnet of this.privateWithEgressSubnets) {
-      cdk.Tags.of(subnet).add("Name", "{{name_prefix}}.vpc.private-with-nat.subnet-${subnet.availabilityZone.slice(-1)}");
+      cdk.Tags.of(subnet).add("Name", "{{this.name_prefix}}.vpc.private-with-nat.subnet-${subnet.availabilityZone.slice(-1)}");
     }
     {%- endif %}
 
-    {%- if add_private_isolated_subnet %}
+    {%- if this.add_private_isolated_subnet %}
     for (const subnet of this.privateIsolatedSubnets) {
-      cdk.Tags.of(subnet).add("Name", "{{name_prefix}}.vpc.private-isolated.subnet-${subnet.availabilityZone.slice(-1)}");
+      cdk.Tags.of(subnet).add("Name", "{{this.name_prefix}}.vpc.private-isolated.subnet-${subnet.availabilityZone.slice(-1)}");
     }
     {%- endif %}
   }
 }
 {%- else -%}
-new {{class_name}}(mainStack, envConfig);
+new {{this.class_name}}(mainStack, envConfig);
 {%- endif -%}

@@ -6,7 +6,7 @@ import { EnvConfig } from "@base/config/configSchema";
 
 // Construct imports
 {% for ci in constructs -%}
-import { {{ci.class}} } from "@base{{ci.path}}";
+import { {{ci.class_name}} } from "@base{{ci.import_path}}";
 {% endfor %}
 
 
@@ -14,7 +14,7 @@ export class StackRoot extends cdk.Stack {
   // Holder of all root constructs
   //
   {% for c in constructs -%}
-    public readonly {{ c.instance_name }}: {{c.class}};
+    public readonly {{ c.var_name }}: {{c.class_name}};
   {% endfor %}
 
   constructor(
@@ -34,12 +34,7 @@ export class StackRoot extends cdk.Stack {
     );
 
     // Root Constructs
-    //
-    // ....
-
-    // substacks
-    //
-    // ....
+    
 
   }
 }

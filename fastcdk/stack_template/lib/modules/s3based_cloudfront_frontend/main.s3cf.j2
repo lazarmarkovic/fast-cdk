@@ -1,0 +1,60 @@
+{% if render_class_def %}
+// External imports
+import * as cdk from "aws-cdk-lib";
+
+// Config import
+import { EnvConfig } from "@base/config/configSchema";
+import { DeploymentEnvEnum } from "@base/mics/deploymentEnvEnum";
+
+// Root imports
+import { {{main_hosted_zone.class_name}} } from "@base/{{main_hosted_zone.import_path}}";
+import { {{git_oidc_from_resource.class_name}} } from "@base/{{git_oidc_from_resource.import_path}}";
+
+// Local imports
+import { {{s3_bucket.class_name}} } from "@base/{{s3_bucket.import_path}}";
+import { {{cloudfront.class_name}} } from "@base/{{cloudfront.import_path}}";
+import { {{oidc_roles.class_name}} } from "@base/{{oidc_roles.import_path}}";
+
+
+export class {{this.class_name}} {
+  public readonly {{s3_bucket.var_name}}: {{s3_bucket.class_name}};
+  public readonly {{cloudfront.var_name}}: {{cloudfront.class_name}};
+  public readonly {{oidc_roles.var_name}}: {{oidc_roles.class_name}};
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+    {{main_hosted_zone.var_name}}: {{main_hosted_zone.class_name}},
+    {{git_oidc_from_resource.var_name}}: {{git_oidc_from_resource.class_name}},
+  ) {
+    // App frontend S3 bucket
+    this.{{s3_bucket.var_name}} = new {{s3_bucket.class_name}}(mainStack, envConfig);
+
+
+    // CloudFront holder
+    this.{{cloudfront.var_name}} = new {{cloudfront.class_name}}(
+      mainStack,
+      envConfig,
+      {{main_hosted_zone.var_name}},
+      this.{{s3_bucket.var_name}},
+    );
+
+    // GitHub Actions OIDC role
+    this.{{oidc_roles.var_name}} = new {{oidc_roles.class_name}}(
+      mainStack,
+      envConfig,
+      {{git_oidc_from_resource.var_name}},
+      this.{{s3_bucket.var_name}},
+      this.{{cloudfront.var_name}},
+    );
+  }
+}
+{%- else -%} new {{this.class_name}}(
+  mainStack, 
+  envConfig,
+
+  this.{{ git_oidc_from_resource.var_name }},
+  this.{{ s3_bucket.var_name }},
+  this.{{ cloudfront.var_name }},
+);
+{% endif %}

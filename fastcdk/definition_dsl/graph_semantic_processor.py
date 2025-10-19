@@ -150,6 +150,7 @@ class GraphSemanticProcessor:
           # Make new node with deep copy
           print(" - Creating instance of: " + dov_oi_obj.def_name + " with new assigned name: " + dov_oi_obj.assigned_name)
           new_node = GraphNode(def_deep_copy, NodeType.INSTANCE, node_to_copy.base_path, assigned_name=dov_oi_obj.assigned_name, edges=node_to_copy.edges)
+          new_node.original_assigned_name = node_to_copy.original_assigned_name
           self.graph.add_node(new_node)
           dov_node = new_node
         else:

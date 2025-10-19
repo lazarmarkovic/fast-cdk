@@ -1,7 +1,7 @@
 ecr_from_resource {
 
   templates {
-    ecr {
+    this {
       template_file = ecr.j2
       gen_path = /
       gen_file_name = ecr.root.ts
