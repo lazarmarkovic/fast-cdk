@@ -23,5 +23,6 @@ export class {{this.class_name}} {
     cdk.Tags.of(this.cloudWatchLogGroup).add("Name", "{{this.name_prefix}}.log-group");
   }
 }
-{%- else -%} new {{this.class_name}}(mainStack, envConfig);
-{% endif %}
+{%- else -%} 
+new {{this.class_name}}(mainStack, envConfig);
+{%- endif -%}

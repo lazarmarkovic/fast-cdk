@@ -26,5 +26,6 @@ export class {{this.class_name}} {
     cdk.Tags.of(this.ecrRepo).add("Name", "{{this.name_prefix}}.ecr-repo");
   }
 }
-{%- else -%} new {{this.class_name}}(mainStack, envConfig);
-{% endif %}
+{%- else -%}
+new {{this.class_name}}(mainStack, envConfig);
+{%- endif -%}

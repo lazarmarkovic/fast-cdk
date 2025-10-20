@@ -1,6 +1,6 @@
 from importlib.resources import files
 
-from fastcdk.data_structure.graph import DirectedAcyclicGraph
+from fastcdk.definition_dsl.cdk_project_gen import CDKProjectGenerator
 from fastcdk.definition_dsl.graph_semantic_processor import GraphSemanticProcessor
 from fastcdk.definition_dsl.metamodel import MetaModel
 from fastcdk.definition_dsl.semantic_processors import SemanticProcessors
@@ -49,5 +49,9 @@ for i in instances:
   gsp.visualize()
 
   transformer = Transformer(gsp.graph)
-  transformer.to_files_list()
+  transformer.transform_to_context()
   print("\n--- End processing instance ---\n\n")
+
+
+cdkProjectGenerator = CDKProjectGenerator()
+# cdkProjectGenerator.generate([], [])

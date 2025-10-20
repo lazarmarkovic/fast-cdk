@@ -1,4 +1,3 @@
-{% if render_class_def %}
 // External imports
 import * as cdk from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
@@ -48,5 +47,3 @@ export class {{this.class_name}} {
     cdk.Tags.of(this.frontendBucket).add("Name", "{{this.name_prefix}}.s3-bucket");
   }
 }
-{%- else -%} new {{this.class_name}}(mainStack, envConfig);
-{% endif %}

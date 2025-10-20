@@ -176,7 +176,7 @@ class SemanticProcessors:
       single_input = i
       if (single_input.key in table):
         raise TextXSemanticError(f"Duplicate input variable '{single_input.key}' in dep_entry section.", **get_location(i))
-      table[single_input.key] = single_input
+      table[single_input.key] = single_input.val
     entity.semantic_data = DefaultInputMap(table=table)
 
 

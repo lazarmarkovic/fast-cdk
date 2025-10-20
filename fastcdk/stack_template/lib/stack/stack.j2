@@ -14,7 +14,7 @@ export class StackRoot extends cdk.Stack {
   // Holder of all root constructs
   //
   {% for c in constructs -%}
-    public readonly {{ c.var_name }}: {{c.class_name}};
+  public readonly {{ c.var_name }}: {{c.class_name}};
   {% endfor %}
 
   constructor(
@@ -34,7 +34,8 @@ export class StackRoot extends cdk.Stack {
     );
 
     // Root Constructs
-    
-
+    {% for c in constructs -%}
+    {{ c.rendered_constructor | trim | indent(4, False, True) }}
+    {% endfor %}
   }
 }

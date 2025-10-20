@@ -1,4 +1,3 @@
-{% if render_class_def %}
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as cert from "aws-cdk-lib/aws-certificatemanager";
@@ -75,11 +74,3 @@ export class {{this.class_name}} {
     cdk.Tags.of(this.cfDist).add("Name", "{{this.id_prefix}}.cf-distribution");
   }
 }
-{%- else -%} new {{this.class_name}}(
-  mainStack, 
-  envConfig,
-
-  this.{{main_hosted_zone.var_name}},
-  this.{{s3_bucket.var_name}},
-);
-{% endif %}
