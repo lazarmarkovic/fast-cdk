@@ -51,11 +51,10 @@ export class {{this.class_name}} {
 }
 {%- else -%} 
 new {{this.class_name}}(
-  mainStack, 
+  this, 
   envConfig,
 
+  this.{{ main_hosted_zone.var_name }},
   this.{{ git_oidc_from_resource.var_name }},
-  this.{{ s3_bucket.var_name }},
-  this.{{ cloudfront.var_name }},
 );
 {%- endif -%}

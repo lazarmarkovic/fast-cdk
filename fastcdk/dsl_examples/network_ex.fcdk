@@ -1,17 +1,11 @@
 # Test Network Template stuff
 
 climbing_app = stack {
-  aws_account_id = 111111111111
-  aws_region = eu-west-1
-  aws_stack_name = ClimbingAppDev
-  project = climbing-app-dev
-  exe_env = staging
-
   network_1
-  network_2
 }
 
 network_1 = network_with_nat {
+  this.gen_file_name = network.rrrroot.ts
   enable_dns_support = true # When we don't set any param, default values are being used
 }
 

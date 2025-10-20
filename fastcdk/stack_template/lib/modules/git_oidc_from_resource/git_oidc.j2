@@ -22,5 +22,5 @@ export class {{this.class_name}} {
   }
 }
 {%- else -%} 
-new {{this.class_name}}(mainStack, envConfig);
+new {{this.class_name}}(this, envConfig);
 {%- endif -%}

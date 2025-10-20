@@ -1,14 +1,7 @@
 # Test Network Template stuff
 
 climbing_app = stack {
-  aws_account_id = 111111111111
-  aws_region = eu-west-1
-  aws_stack_name = ClimbingAppDev
-  project = climbing-app-dev
-  exe_env = stagingRRR
-
   s3_cf
-
 
   network_1
 }

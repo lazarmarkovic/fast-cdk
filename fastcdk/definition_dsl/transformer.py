@@ -36,11 +36,18 @@ class Transformer:
       env_vars = {}
       for ev_key, ev_val in node.definition.env_vars.table.items():
         env_vars[ev_key] = ev_val.path_joined
+
+      dii = {}
+      for k, v in node.definition.default_inputs.table.items():
+        if hasattr(v, "val"):
+          dii[k] = v.val
+        else:
+          dii[k] = v
       
       context_as_obj = SimpleNamespace(**{
         **asdict(this_template),
         **env_vars,
-        **node.definition.default_inputs.table
+        **dii
       })
 
       contexts_as_edge = {

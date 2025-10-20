@@ -35,7 +35,7 @@ export class StackRoot extends cdk.Stack {
 
     // Root Constructs
     {% for c in constructs -%}
-    {{ c.rendered_constructor | trim | indent(4, False, True) }}
+    this.{{ c.var_name }} = {{ c.rendered_constructor | trim | indent(4, False, True) }}
     {% endfor %}
   }
 }
