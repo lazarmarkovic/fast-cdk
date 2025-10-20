@@ -8,7 +8,8 @@
     ],
     "baseUrl": "./", 
     "paths": {
-      "@base/*": ["./*"],
+      "@fastcdk-root/*": ["./*"],
+      "@fastcdk-lib/*": ["./lib/*"],
     },
     "declaration": true,
     "strict": true,

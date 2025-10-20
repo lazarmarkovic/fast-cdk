@@ -1,6 +1,6 @@
 import os
 import shutil
-from importlib.resources import as_file, files
+from importlib.resources import as_file
 from pathlib import Path
 from typing import Union
 
@@ -56,9 +56,54 @@ class CDKProjectGenerator:
 
 
   def generate(self, construct_nodes, stack_node):
+    # Generate basic proejct files
     for resource in cdk_project_files:
       print(resource)
-      print("\n\n")
 
       testing_ground_path = Path("~/code/fast_cdk/testing_ground")
       self.copy_resource_preserve_structure(resource, testing_ground_path)
+
+    # generate env config and loading system
+
+
+    # Generate TS constructs code files
+    for cn in construct_nodes:
+      for t_key, t_val in cn.definition.templates.table.items():
+        self.write_text_at_path(cn.rendered_classes[t_key], Path("lib", t_val.gen_path) / t_val.gen_file_name, testing_ground_path)
+
+
+    # Generate stack TS code
+    stack_node_rendered_class = stack_node.rendered_classes["this"]
+    stack_node_tempalte = stack_node.definition.templates.table["this"]
+    self.write_text_at_path(stack_node_rendered_class, Path("lib", stack_node_tempalte.gen_path) / stack_node_tempalte.gen_file_name, testing_ground_path)
+    
+
+  def generate_config_stuff(self, tree, exe_env):
+    # build_ctx_and_render.py
+    from importlib.resources import as_file, files
+
+    from jinja2 import Environment, FileSystemLoader
+
+    ctx = {
+      "tree": tree,
+      "iface_name": "EnvConfig",
+    }
+
+    testing_ground_path = Path("~/code/fast_cdk/testing_ground")
+    resource = files("fastcdk.stack_template.config") / "configSchema.j2"
+    resource2 = files("fastcdk.stack_template.env-config") / "env.j2"
+
+    with as_file(resource) as tpl_path:
+      env = Environment(loader=FileSystemLoader(str(tpl_path.parent)))
+      tpl = env.get_template(tpl_path.name)
+      out = tpl.render(ctx)
+      self.write_text_at_path(out, Path("config") / "configSchema.ts", testing_ground_path)
+      print(out)
+
+    # this yields a real filesystem path even if the package is zipped
+    with as_file(resource2) as tpl_path2:
+      env = Environment(loader=FileSystemLoader(str(tpl_path2.parent)))
+      tpl = env.get_template(tpl_path2.name)
+      out = tpl.render(ctx)
+      self.write_text_at_path(out, Path("env-config") / f"{exe_env}.toml", testing_ground_path)
+      print(out)

@@ -4,17 +4,17 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as codedeploy from "aws-cdk-lib/aws-codedeploy";
 
 // Config imports
-import { EnvConfig } from "@base/config/configSchema";
+import { EnvConfig } from "@fastcdk-root/config/configSchema";
 
 // Root imports
-import { {{git_oidc_from_resource.class_name}} } from "@base/{{git_oidc_from_resource.import_path}}";
+import { {{git_oidc_from_resource.class_name}} } from "@fastcdk-lib/{{git_oidc_from_resource.import_path}}";
 
 // Local imports
-import { {{s3_bucket.class_name}} } from "@base/{{s3_bucket.import_path}}";
-import { {{cloudfront.class_name}} } from "@base/{{cloudfront.import_path}}";
+import { {{s3_bucket.class_name}} } from "@fastcdk-lib/{{s3_bucket.import_path}}";
+import { {{cloudfront.class_name}} } from "@fastcdk-lib/{{cloudfront.import_path}}";
 
 
-export class {{this.class_name}} {
+export class {{oidc_roles.class_name}} {
   public readonly codeDeployApp: codedeploy.ServerApplication;
   public readonly deploymentGroup: codedeploy.ServerDeploymentGroup;
   public readonly gitPlatformActionsRole: iam.Role;
@@ -27,8 +27,8 @@ export class {{this.class_name}} {
     s3: {{s3_bucket.class_name}},
     scfCloudFront: {{cloudfront.class_name}},
   ) {
-    this.gitPlatformActionsRole = new iam.Role(mainStack, "{{this.id_prefix}}GitPlatformActionsDeployRole", {
-      roleName: "{{this.name_prefix}}.github-actions-deploy-role",
+    this.gitPlatformActionsRole = new iam.Role(mainStack, "{{oidc_roles.id_prefix}}GitPlatformActionsDeployRole", {
+      roleName: "{{oidc_roles.name_prefix}}.github-actions-deploy-role",
       assumedBy: new iam.FederatedPrincipal(
         rootGitOidc.oidcProvider.openIdConnectProviderArn,
         {
@@ -65,17 +65,17 @@ export class {{this.class_name}} {
 
 
     // Outputs - generated after deployment
-    new cdk.CfnOutput(mainStack, "{{this.id_prefix}}OutGitPlatformActionsRoleArn", {
+    new cdk.CfnOutput(mainStack, "{{oidc_roles.id_prefix}}OutGitPlatformActionsRoleArn", {
       description: "FA ARN of the GitHub OIDC IAM Role",
       value: this.gitPlatformActionsRole.roleArn
     });
 
-    new cdk.CfnOutput(mainStack, "{{this.id_prefix}}OutS3BucketName", {
+    new cdk.CfnOutput(mainStack, "{{oidc_roles.id_prefix}}OutS3BucketName", {
       description: "FA S3 Bucket Name",
       value: s3.frontendBucket.bucketName
     });
 
-    new cdk.CfnOutput(mainStack, "{{this.id_prefix}}OutCfDistributionId", {
+    new cdk.CfnOutput(mainStack, "{{oidc_roles.id_prefix}}OutCfDistributionId", {
       description: "FA CloudFront Distribution ID",
       value: scfCloudFront.cfDist.distributionId
     });

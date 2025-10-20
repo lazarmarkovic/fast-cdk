@@ -84,7 +84,7 @@ class Transformer:
       node.rendered_classes = rendered_classes
 
 
-    def transform_to_context(self):
+    def transform_nodes(self):
       stack_root_node = self.get_root_node()
       nodes_in_use = self.graph.usage_layers(stack_root_node.assigned_name)
       
@@ -127,3 +127,30 @@ class Transformer:
       stack_root_node.rendered_classes["this"] = template.render(context)
 
       print(stack_root_node.rendered_classes["this"])
+
+      exe_env = stack_root_node.definition.env_vars.table["exe_env"].value
+      print("EXE: " + exe_env)
+
+      return (real_nodes, stack_root_node, exe_env)
+
+
+    def transform_env_vars(self, nodes):
+      pairs = []
+      for node in nodes:
+        for key, val in node.definition.env_vars.table.items():
+          pairs.append((val.path_joined, val.value))
+
+      for p in pairs:
+        print(p)
+
+      
+      tree: dict = {}
+      for path, val in pairs:
+        parts = path.split(".")
+        cur = tree
+        for p in parts[:-1]:
+          cur = cur.setdefault(p, {})
+        cur[parts[-1]] = {"__leaf__": True, "value": val}
+
+      return tree
+          

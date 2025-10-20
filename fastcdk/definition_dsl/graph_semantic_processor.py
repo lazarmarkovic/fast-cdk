@@ -23,7 +23,6 @@ class GraphSemanticProcessor:
   def visualize(self):
     nodes = self.graph.get_nodes()
     edges = self.graph.get_edges() 
-    print("\n\n")
     print("EDGES:")
     for e in edges:
       print(e)
@@ -175,6 +174,7 @@ class GraphSemanticProcessor:
     stack_node = self.graph.get_node("stack")
     stack_def_deep_copy = deep_copy_def(stack_node.definition)
     self.stack_instance.apply_to_stack_def(stack_def_deep_copy)
+    print("RRRRRRRRRRRRR: " + stack_def_deep_copy.default_inputs.table["exe_env"])
     new_stack_node = GraphNode(stack_def_deep_copy, NodeType.INSTANCE, stack_node.base_path, assigned_name=self.stack_instance.stack_name, edges=[])
     self.graph.add_node(new_stack_node)
 

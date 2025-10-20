@@ -2,7 +2,7 @@ stack {
   templates {
     this {
       template_file = stack.j2
-      gen_path = /
+      gen_path = .
       gen_file_name = stack.ts
 
       var_name = stackRoot

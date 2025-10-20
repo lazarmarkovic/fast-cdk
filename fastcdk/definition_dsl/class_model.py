@@ -70,6 +70,7 @@ class SingleGeneralInput:
 class ApplicableToDef:
   def apply_to(self, definition: SingleDefinition):
     for _, input_obj in self.inputs.items():
+      print("INPUTTT: " + str(input_obj.key))
       if input_obj.type == SingleGeneralInputType.REGULAR_INPUT:
         definition.default_inputs.table[input_obj.key] = input_obj.val
       elif input_obj.type == SingleGeneralInputType.ENV_VAR_INPUT:
@@ -123,6 +124,7 @@ class SingleStackInstance(ApplicableToDef):
 
   def apply_to_stack_def(self, stack_def):
     super().apply_to(stack_def)
+
 
     # add children as deps
     for child in self.children:

@@ -3,7 +3,7 @@ hosted_zone {
   templates {
     this {
       template_file = hosted_zone.j2
-      gen_path = /
+      gen_path = .
       gen_file_name = hosted-zone.root.ts
 
       var_name = hostedZone

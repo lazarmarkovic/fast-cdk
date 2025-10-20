@@ -3,7 +3,7 @@ cloudwatch_log_group {
   templates {
     this {
       template_file = log.j2
-      gen_path = /
+      gen_path = .
       gen_file_name = log.root.ts
 
       var_name = log

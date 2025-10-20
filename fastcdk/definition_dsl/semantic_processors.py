@@ -1,6 +1,7 @@
 
 from textx import get_location  # noqa: I001
 from textx.exceptions import TextXSemanticError
+from pathlib import Path
 
 from fastcdk.definition_dsl.class_model import (
   SingleDefinition, 
@@ -74,8 +75,10 @@ class SemanticProcessors:
   
 
   def single_template(self, entity):
+    file_name_for_import = str(Path(entity.gen_file_name.val).with_suffix(""))
+    import_path = file_name_for_import if entity.gen_path.val == '.' else entity.gen_path.val + '/' + file_name_for_import
     entity.semantic_data = SingleTemplate(
-      import_path = entity.gen_path.val + "/" + entity.gen_file_name.val if entity.gen_path.val != "/" else "/" + entity.gen_file_name.val,
+      import_path = import_path,
       template_name=entity.template_name,
       template_file=entity.template_file.val,
       gen_path=entity.gen_path.val,
@@ -176,7 +179,7 @@ class SemanticProcessors:
       single_input = i
       if (single_input.key in table):
         raise TextXSemanticError(f"Duplicate input variable '{single_input.key}' in dep_entry section.", **get_location(i))
-      table[single_input.key] = single_input.val
+      table[single_input.key] = single_input
     entity.semantic_data = DefaultInputMap(table=table)
 
 

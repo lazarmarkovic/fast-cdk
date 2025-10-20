@@ -3,7 +3,7 @@ s3_based_cloudfront_full_frontend {
   templates {
     this {
       template_file = main.s3cf.j2
-      gen_path = /s3based-cloudfront-frontend
+      gen_path = s3based-cloudfront-frontend
       gen_file_name = main.s3cf.ts
 
       var_name = s3cfFrontend
@@ -14,7 +14,7 @@ s3_based_cloudfront_full_frontend {
 
     cloudfront {
       template_file = cloudfront.s3cf.j2
-      gen_path = /s3based-cloudfront-frontend
+      gen_path = s3based-cloudfront-frontend
       gen_file_name = cloudfront.s3cf.ts
 
       var_name = s3cfCloudfront
@@ -25,7 +25,7 @@ s3_based_cloudfront_full_frontend {
 
     oidc_roles {
       template_file = oidc_roles.s3cf.j2
-      gen_path = /s3based-cloudfront-frontend
+      gen_path = s3based-cloudfront-frontend
       gen_file_name = oidc_roles.s3cf.ts
 
       var_name = s3cfOidcRoles
@@ -36,7 +36,7 @@ s3_based_cloudfront_full_frontend {
 
     s3_bucket {
       template_file = s3_bucket.s3cf.j2
-      gen_path = /s3based-cloudfront-frontend
+      gen_path = s3based-cloudfront-frontend
       gen_file_name = s3_bucket.s3cf.ts
 
       var_name = s3cfS3Bucket

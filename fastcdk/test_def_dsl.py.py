@@ -49,9 +49,12 @@ for i in instances:
   gsp.visualize()
 
   transformer = Transformer(gsp.graph)
-  transformer.transform_to_context()
+  nodes, stack_node, exe_env = transformer.transform_nodes()
+  tree = transformer.transform_env_vars(nodes)
   print("\n--- End processing instance ---\n\n")
 
 
 cdkProjectGenerator = CDKProjectGenerator()
-# cdkProjectGenerator.generate([], [])
+cdkProjectGenerator.generate(nodes, stack_node)
+cdkProjectGenerator.generate_config_stuff(tree, exe_env)
+

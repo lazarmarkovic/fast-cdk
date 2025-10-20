@@ -1,0 +1,50 @@
+{% macro joi_obj(node, indent=2) -%}
+{%- set pad = ' ' * indent -%}
+{%- for key, child in node|dictsort -%}
+{{ pad }}{{ key }}: {% if child.__leaf__ -%}
+Joi.string().required(){% else -%}
+Joi.object({
+{{ joi_obj(child, indent + 2) }}{{ pad }}}).required(){% endif -%}{% if not loop.last -%},{% endif -%}{{ '\n' -}}
+{%- endfor -%}
+{%- endmacro -%}
+
+import * as Joi from "joi";
+
+export const configValidationSchema = Joi.object({
+  AwsStackName: Joi.string().required(),
+  AwsAccountId: Joi.string().required().length(12),
+  AwsRegion: Joi.string().required(),
+
+  Project: Joi.string().required(),
+  Environment: Joi.string().required(),
+  Version: Joi.string().required(),
+{{ joi_obj(tree, 2) }}}).required();
+
+
+
+
+
+{% macro ts_obj(node, indent=2) -%}
+{%- set pad = ' ' * indent -%}
+{%- for key, child in node|dictsort -%}
+{%- if child.__leaf__ -%}
+{{ pad }}{{ key }}: string;{{ '\n' -}}
+{%- else -%}
+{{ pad }}{{ key }}: { {{ '\n' -}}
+{{ ts_obj(child, indent + 2) -}}
+{{ pad }}};{{ '\n' -}}
+{%- endif -%}
+{%- endfor -%}
+{%- endmacro -%}
+
+export interface {{ iface_name }} { {{ '\n' -}}
+  AwsStackName: string;
+  AwsAccountId: string;
+  AwsRegion: string;
+
+  Project: string;
+  Environment: string;
+  Version: string;
+{{ ts_obj(tree, 2) -}}
+}
+

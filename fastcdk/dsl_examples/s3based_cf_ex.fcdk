@@ -5,7 +5,7 @@ climbing_app = stack {
   aws_region = eu-west-1
   aws_stack_name = ClimbingAppDev
   project = climbing-app-dev
-  exe_env = staging
+  exe_env = stagingRRR
 
   s3_cf
 

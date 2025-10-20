@@ -3,7 +3,7 @@ network_with_nat {
   templates {
     this {
       template_file = network.j2
-      gen_path = /
+      gen_path = .
       gen_file_name = network.root.ts
 
       var_name = network

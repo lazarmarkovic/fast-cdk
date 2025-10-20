@@ -2,11 +2,11 @@
 import * as cdk from "aws-cdk-lib";
 
 // Config imports
-import { EnvConfig } from "@base/config/configSchema";
+import { EnvConfig } from "@fastcdk-root/config/configSchema";
 
 // Construct imports
 {% for ci in constructs -%}
-import { {{ci.class_name}} } from "@base{{ci.import_path}}";
+import { {{ci.class_name}} } from "@fastcdk-lib/{{ci.import_path}}";
 {% endfor %}
 
 

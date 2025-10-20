@@ -3,17 +3,17 @@
 import * as cdk from "aws-cdk-lib";
 
 // Config import
-import { EnvConfig } from "@base/config/configSchema";
-import { DeploymentEnvEnum } from "@base/mics/deploymentEnvEnum";
+import { EnvConfig } from "@fastcdk-root/config/configSchema";
+import { DeploymentEnvEnum } from "@fastcdk-root/misc/deploymentEnvEnum";
 
 // Root imports
-import { {{main_hosted_zone.class_name}} } from "@base/{{main_hosted_zone.import_path}}";
-import { {{git_oidc_from_resource.class_name}} } from "@base/{{git_oidc_from_resource.import_path}}";
+import { {{main_hosted_zone.class_name}} } from "@fastcdk-lib/{{main_hosted_zone.import_path}}";
+import { {{git_oidc_from_resource.class_name}} } from "@fastcdk-lib/{{git_oidc_from_resource.import_path}}";
 
 // Local imports
-import { {{s3_bucket.class_name}} } from "@base/{{s3_bucket.import_path}}";
-import { {{cloudfront.class_name}} } from "@base/{{cloudfront.import_path}}";
-import { {{oidc_roles.class_name}} } from "@base/{{oidc_roles.import_path}}";
+import { {{s3_bucket.class_name}} } from "@fastcdk-lib/{{s3_bucket.import_path}}";
+import { {{cloudfront.class_name}} } from "@fastcdk-lib/{{cloudfront.import_path}}";
+import { {{oidc_roles.class_name}} } from "@fastcdk-lib/{{oidc_roles.import_path}}";
 
 
 export class {{this.class_name}} {

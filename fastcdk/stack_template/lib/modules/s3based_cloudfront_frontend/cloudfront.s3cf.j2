@@ -7,16 +7,16 @@ import * as r53 from "aws-cdk-lib/aws-route53";
 import * as r53_targets from "aws-cdk-lib/aws-route53-targets"
 
 // Config import
-import { EnvConfig } from "@base/config/configSchema";
-import { DeploymentEnvEnum } from "@base/mics/deploymentEnvEnum";
+import { EnvConfig } from "@fastcdk-root/config/configSchema";
+import { DeploymentEnvEnum } from "@fastcdk-root/misc/deploymentEnvEnum";
 
 // Root imports
-import { {{main_hosted_zone.class_name}} } from "@base/{{main_hosted_zone.import_path}}";
+import { {{main_hosted_zone.class_name}} } from "@fastcdk-lib/{{main_hosted_zone.import_path}}";
 
 // Local imports
-import { {{s3_bucket.class_name}} } from "@base/{{s3_bucket.import_path}}";
+import { {{s3_bucket.class_name}} } from "@fastcdk-lib/{{s3_bucket.import_path}}";
 
-export class {{this.class_name}} {
+export class {{cloudfront.class_name}} {
   private readonly deploymentEnv: string;
   public readonly cfDist: cf.Distribution;
   public readonly dnsRecord: r53.RecordSet;
@@ -37,10 +37,10 @@ export class {{this.class_name}} {
     // Must be in us-east-1, always
     this.cloudFrontCertificate = cert.Certificate.fromCertificateArn(
       mainStack,
-      "{{this.id_prefix}}CloudfrontCertificate",
+      "{{cloudfront.id_prefix}}CloudfrontCertificate",
       envConfig.{{this.cloudfront_certificate_arn}});
 
-    this.cfDist = new cf.Distribution(mainStack, "{{this.id_prefix}}CloudFrontDistribution", {
+    this.cfDist = new cf.Distribution(mainStack, "{{cloudfront.id_prefix}}CloudFrontDistribution", {
       domainNames: mainDomainNames,
       defaultBehavior: {
         origin: new origins.HttpOrigin(s3.frontendBucket.bucketWebsiteDomainName, {
@@ -62,7 +62,7 @@ export class {{this.class_name}} {
     });
 
 
-    this.dnsRecord = new r53.ARecord(mainStack, "{{this.id_prefix}}CloudfrontDNSRecord", {
+    this.dnsRecord = new r53.ARecord(mainStack, "{{cloudfront.id_prefix}}CloudfrontDNSRecord", {
       recordName: envConfig.{{this.domain_name}},
       zone: hostedZone.appHostedZone,
       target: r53.RecordTarget.fromAlias(new r53_targets.CloudFrontTarget(this.cfDist)),
@@ -71,6 +71,6 @@ export class {{this.class_name}} {
     });
 
     // Tag resources
-    cdk.Tags.of(this.cfDist).add("Name", "{{this.id_prefix}}.cf-distribution");
+    cdk.Tags.of(this.cfDist).add("Name", "{{cloudfront.id_prefix}}.cf-distribution");
   }
 }
