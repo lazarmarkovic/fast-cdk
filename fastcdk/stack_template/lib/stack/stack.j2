@@ -1,3 +1,8 @@
+{%- macro keep_begin(id, sig) -%}// <fastcdk:keep begin id={{ id }} sig={{ sig }}>{%- endmacro -%}
+{%- macro keep_end() -%}// </fastcdk:keep>{%- endmacro -%}
+
+{% set VERSION_SIGNATURE = 'v0.0.1' %}
+
 // External imports
 import * as cdk from "aws-cdk-lib";
 
@@ -10,12 +15,21 @@ import { {{ci.class_name}} } from "@fastcdk-lib/{{ci.import_path}}";
 {% endfor %}
 
 
+{{ keep_begin("StackRoot.OtherImports", VERSION_SIGNATURE) }}
+/* user-code */
+{{ keep_end() }}
+
+
 export class StackRoot extends cdk.Stack {
   // Holder of all root constructs
   //
   {% for c in constructs -%}
   public readonly {{ c.var_name }}: {{c.class_name}};
   {% endfor %}
+
+  {{ keep_begin("StackRoot.OtherConstructsInit", VERSION_SIGNATURE) }}
+  /* user-code */
+  {{ keep_end() }}
 
   constructor(
     scope: cdk.App,
@@ -33,9 +47,14 @@ export class StackRoot extends cdk.Stack {
       }
     );
 
-    // Root Constructs
+    // Construct inits
     {% for c in constructs -%}
     this.{{ c.var_name }} = {{ c.rendered_constructor | trim | indent(4, False, True) }}
     {% endfor %}
+
+
+    {{ keep_begin("StackRoot.OtherConstructs", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
   }
 }

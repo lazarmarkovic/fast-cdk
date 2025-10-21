@@ -1,6 +1,4 @@
-from collections.abc import Iterable
 from enum import Enum
-from typing import Optional
 
 from fastcdk.data_structure.errors import GraphCycleError, NodeAlreadyExistsError, NodeNotFoundError
 
@@ -8,7 +6,6 @@ from fastcdk.data_structure.errors import GraphCycleError, NodeAlreadyExistsErro
 class NodeType(Enum):
   DEFINITION = 0
   INSTANCE = 1
-
 
 
 class GraphNode:
@@ -139,7 +136,7 @@ class DirectedAcyclicGraph:
     Produce sink-first layers:
       L0: nodes with outdegree 0,
       L1: nodes whose outgoing edges only point into L0,
-      L2: nodes whose outgoing edges only point into L0∪L1,
+      L2: nodes whose outgoing edges only point into L0 L1,
       ...
     """
 
@@ -147,7 +144,6 @@ class DirectedAcyclicGraph:
       raise NodeNotFoundError(start_name)
     node_set = self.reachable_from(start_name)
 
-    # build forward and reverse adjacency within the working set
     adj = {u: set() for u in node_set}
     rev = {u: set() for u in node_set}
 
@@ -158,10 +154,7 @@ class DirectedAcyclicGraph:
         adj[u].add(edge)
         rev[edge].add(u)
 
-    # compute outdegrees (within the working set)
     outdeg = {u: len(adj[u]) for u in node_set}
-
-    # initial sinks
     layer = [u for u, d in outdeg.items() if d == 0]
     layer.sort()
       
@@ -169,12 +162,10 @@ class DirectedAcyclicGraph:
     removed = set(layer)
 
     if not layer and node_set:
-      # no sinks found ⇒ cycle inside `node_set`
-      raise GraphCycleError("〈subgraph〉", "〈subgraph〉")
+      raise GraphCycleError("n1", "n2")
 
     while layer:
       layers.append(layer)
-      # peel current sinks and update parents' outdegree
       next_layer_set = set()
       for sink in layer:
         for parent in rev[sink]:
@@ -184,21 +175,15 @@ class DirectedAcyclicGraph:
           if outdeg[parent] == 0:
             next_layer_set.add(parent)
 
-      # prepare next layer
       layer = sorted(next_layer_set)
       removed.update(layer)
 
-    # safety: if anything remains, it's a cycle
     if len(removed) != len(node_set):
-      raise GraphCycleError("〈subgraph〉", "〈subgraph〉")
-    
+      raise GraphCycleError("n1", "n2")
     return layers
 
 
 def usage_order(self, start: str) -> list[str]:
-    """
-    Flattened sink-first order (L0, then L1, ...).
-    """
     layers = self.usage_layers(start)
     flat_names = [name for group in layers for name in group]
     return flat_names

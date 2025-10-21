@@ -1,3 +1,8 @@
+{%- macro keep_begin(id, sig) -%}// <fastcdk:keep begin id={{ id }} sig={{ sig }}>{%- endmacro -%}
+{%- macro keep_end() -%}// </fastcdk:keep>{%- endmacro -%}
+
+{% set VERSION_SIGNATURE = 'v0.0.1' %}
+
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -14,10 +19,19 @@ import { {{s3_bucket.class_name}} } from "@fastcdk-lib/{{s3_bucket.import_path}}
 import { {{cloudfront.class_name}} } from "@fastcdk-lib/{{cloudfront.import_path}}";
 
 
+{{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
+/* user-code */
+{{ keep_end() }}
+
+
 export class {{oidc_roles.class_name}} {
   public readonly codeDeployApp: codedeploy.ServerApplication;
   public readonly deploymentGroup: codedeploy.ServerDeploymentGroup;
   public readonly gitPlatformActionsRole: iam.Role;
+
+  {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
+  /* user-code */
+  {{ keep_end() }}
 
   constructor(
     mainStack: cdk.Stack,
@@ -26,6 +40,10 @@ export class {{oidc_roles.class_name}} {
     rootGitOidc: {{git_oidc_from_resource.class_name}},
     s3: {{s3_bucket.class_name}},
     scfCloudFront: {{cloudfront.class_name}},
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
   ) {
     this.gitPlatformActionsRole = new iam.Role(mainStack, "{{oidc_roles.id_prefix}}GitPlatformActionsDeployRole", {
       roleName: "{{oidc_roles.name_prefix}}.github-actions-deploy-role",
@@ -63,6 +81,10 @@ export class {{oidc_roles.class_name}} {
       resources: [`arn:aws:s3:::${s3.frontendBucket.bucketName}`],
     }));
 
+    {{ keep_begin(this.class_name ~ ".ExtraPolicy", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
+
 
     // Outputs - generated after deployment
     new cdk.CfnOutput(mainStack, "{{oidc_roles.id_prefix}}OutGitPlatformActionsRoleArn", {
@@ -79,5 +101,9 @@ export class {{oidc_roles.class_name}} {
       description: "FA CloudFront Distribution ID",
       value: scfCloudFront.cfDist.distributionId
     });
+
+    {{ keep_begin(this.class_name ~ ".ExtraOutput", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
   }
 }

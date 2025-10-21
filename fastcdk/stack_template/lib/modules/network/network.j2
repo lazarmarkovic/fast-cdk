@@ -1,3 +1,9 @@
+{%- macro keep_begin(id, sig) -%}// <fastcdk:keep begin id={{ id }} sig={{ sig }}>{%- endmacro -%}
+{%- macro keep_end() -%}// </fastcdk:keep>{%- endmacro -%}
+
+{% set VERSION_SIGNATURE = 'v0.0.1' %}
+
+
 {%- if render_class_def -%}
 // External imports
 import * as cdk from "aws-cdk-lib";
@@ -5,6 +11,10 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 
 // Config imports
 import { EnvConfig } from "@fastcdk-root/config/configSchema";
+
+{{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
+/* user-code */
+{{ keep_end() }}
 
 export class {{this.class_name}} {
   public readonly vpc: ec2.Vpc;
@@ -21,7 +31,17 @@ export class {{this.class_name}} {
   public readonly privateIsolatedSubnets: ec2.ISubnet[];
   {%- endif %}
 
-  constructor(mainStack: cdk.Stack, envConfig: EnvConfig) {
+  {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
+  /* user-post-construct */
+  {{ keep_end() }}
+
+  constructor(
+    mainStack: cdk.Stack, 
+    envConfig: EnvConfig,
+    {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
+    ) {
     this.vpc = new ec2.Vpc(mainStack, "{{this.id_prefix}}VPC", {
       vpcName: "{{this.name_prefix}}.vpc",
       ipAddresses: ec2.IpAddresses.cidr(envConfig.{{this.vpc_cidr}}),
@@ -29,6 +49,11 @@ export class {{this.class_name}} {
       natGateways: {{ this.nat_gateways | int }},
       enableDnsSupport: {{ this.enable_dns_support | lower }},
       enableDnsHostnames: {{ this.enable_dns_host_names | lower }},
+
+      {{ keep_begin(this.class_name ~ ".VpcProps", VERSION_SIGNATURE) }}
+      /* user-vpc-props */
+      {{ keep_end() }}
+
       subnetConfiguration: [
         {%- set comma = joiner() -%}
         {%- if this.add_public_subnet %}{{ comma() }}
@@ -51,6 +76,10 @@ export class {{this.class_name}} {
         {%- endif %}
       ],
     });
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
+    /* user-post-construct */
+    {{ keep_end() }}
 
     {%- if this.add_public_subnet %}
     this.publicVpcSubnetsSelection = this.vpc.selectSubnets({ subnetType: ec2.SubnetType.PUBLIC });
@@ -101,8 +130,19 @@ export class {{this.class_name}} {
       cdk.Tags.of(subnet).add("Name", "{{this.name_prefix}}.vpc.private-isolated.subnet-${subnet.availabilityZone.slice(-1)}");
     }
     {%- endif %}
+
+    {{ keep_begin(this.class_name ~ ".ExtraTags", VERSION_SIGNATURE) }}
+    /* user-extra-tags */
+    {{ keep_end() }}
   }
 }
 {%- else -%}
-new {{this.class_name}}(this, envConfig);
+new {{this.class_name}}(
+  this, 
+  envConfig,
+  
+  {{ keep_begin(this.class_name ~ ".OtherExternalConstructorVars", VERSION_SIGNATURE) }}
+  /* user-code */
+  {{ keep_end() }}
+);
 {%- endif -%}

@@ -1,3 +1,8 @@
+{%- macro keep_begin(id, sig) -%}// <fastcdk:keep begin id={{ id }} sig={{ sig }}>{%- endmacro -%}
+{%- macro keep_end() -%}// </fastcdk:keep>{%- endmacro -%}
+
+{% set VERSION_SIGNATURE = 'v0.0.1' %}
+
 {% if render_class_def %}
 // External imports
 import * as cdk from "aws-cdk-lib";
@@ -10,6 +15,10 @@ import { EnvConfig } from "@fastcdk-root/config/configSchema";
 export class {{this.class_name}} {
   public readonly cloudWatchLogGroup: logs.LogGroup;
 
+  {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
+  /* user-code */
+  {{ keep_end() }}
+
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
@@ -17,10 +26,22 @@ export class {{this.class_name}} {
     this.cloudWatchLogGroup = new logs.LogGroup(mainStack, "{{this.id_prefix}}CwLogGroup", {
       logGroupName: "{{this.name_prefix}}.log-group",
       retention: logs.RetentionDays.THREE_MONTHS,
+
+      {{ keep_begin(this.class_name ~ ".CWProps", VERSION_SIGNATURE) }}
+      /* user-code */
+      {{ keep_end() }}
     });
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
 
     // Tag resources
     cdk.Tags.of(this.cloudWatchLogGroup).add("Name", "{{this.name_prefix}}.log-group");
+
+    {{ keep_begin(this.class_name ~ ".ExtraTags", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
   }
 }
 {%- else -%} 

@@ -1,3 +1,8 @@
+{%- macro keep_begin(id, sig) -%}// <fastcdk:keep begin id={{ id }} sig={{ sig }}>{%- endmacro -%}
+{%- macro keep_end() -%}// </fastcdk:keep>{%- endmacro -%}
+
+{% set VERSION_SIGNATURE = 'v0.0.1' %}
+
 {% if render_class_def %}
 // External imports
 import * as cdk from "aws-cdk-lib";
@@ -16,16 +21,29 @@ import { {{cloudfront.class_name}} } from "@fastcdk-lib/{{cloudfront.import_path
 import { {{oidc_roles.class_name}} } from "@fastcdk-lib/{{oidc_roles.import_path}}";
 
 
+{{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
+/* user-code */
+{{ keep_end() }}
+
+
 export class {{this.class_name}} {
   public readonly {{s3_bucket.var_name}}: {{s3_bucket.class_name}};
   public readonly {{cloudfront.var_name}}: {{cloudfront.class_name}};
   public readonly {{oidc_roles.var_name}}: {{oidc_roles.class_name}};
+
+  {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
+  /* user-code */
+  {{ keep_end() }}
 
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
     {{main_hosted_zone.var_name}}: {{main_hosted_zone.class_name}},
     {{git_oidc_from_resource.var_name}}: {{git_oidc_from_resource.class_name}},
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
   ) {
     // App frontend S3 bucket
     this.{{s3_bucket.var_name}} = new {{s3_bucket.class_name}}(mainStack, envConfig);
@@ -47,6 +65,11 @@ export class {{this.class_name}} {
       this.{{s3_bucket.var_name}},
       this.{{cloudfront.var_name}},
     );
+
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
   }
 }
 {%- else -%} 
@@ -56,5 +79,9 @@ new {{this.class_name}}(
 
   this.{{ main_hosted_zone.var_name }},
   this.{{ git_oidc_from_resource.var_name }},
+
+  {{ keep_begin(this.class_name ~ ".OtherExternalConstructorVars", VERSION_SIGNATURE) }}
+  /* user-code */
+  {{ keep_end() }}
 );
 {%- endif -%}

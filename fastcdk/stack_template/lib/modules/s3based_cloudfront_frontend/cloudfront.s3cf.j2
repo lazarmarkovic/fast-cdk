@@ -1,3 +1,8 @@
+{%- macro keep_begin(id, sig) -%}// <fastcdk:keep begin id={{ id }} sig={{ sig }}>{%- endmacro -%}
+{%- macro keep_end() -%}// </fastcdk:keep>{%- endmacro -%}
+
+{% set VERSION_SIGNATURE = 'v0.0.1' %}
+
 // External imports
 import * as cdk from "aws-cdk-lib";
 import * as cert from "aws-cdk-lib/aws-certificatemanager";
@@ -16,22 +21,41 @@ import { {{main_hosted_zone.class_name}} } from "@fastcdk-lib/{{main_hosted_zone
 // Local imports
 import { {{s3_bucket.class_name}} } from "@fastcdk-lib/{{s3_bucket.import_path}}";
 
+
+{{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
+/* user-code */
+{{ keep_end() }}
+
 export class {{cloudfront.class_name}} {
   private readonly deploymentEnv: string;
   public readonly cfDist: cf.Distribution;
   public readonly dnsRecord: r53.RecordSet;
   public readonly dnsRecord2: r53.RecordSet;
   public readonly cloudFrontCertificate: cert.ICertificate;
+
+  {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
+  /* user-code */
+  {{ keep_end() }}
   
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
     hostedZone: {{main_hosted_zone.class_name}},
     s3: {{s3_bucket.class_name}},
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }
   ) {
     let mainDomainNames = [envConfig.{{this.domain_name}}];
     if (envConfig.Environment === DeploymentEnvEnum.BLUE_PROD) {
-      mainDomainNames = [envConfig.{{this.domain_name}}, `www.${envConfig.{{this.domain_name}}}`]
+      mainDomainNames = [
+        envConfig.{{this.domain_name}}, 
+        `www.${envConfig.{{this.domain_name}}}`,
+          {{ keep_begin(this.class_name ~ ".OtherDomains", VERSION_SIGNATURE) }}
+          /* user-code */
+          {{ keep_end() }}
+        ]
     }
 
     // Must be in us-east-1, always
@@ -47,18 +71,30 @@ export class {{cloudfront.class_name}} {
           customHeaders: { "User-Agent": envConfig.{{this.cloudfront_connection_secret}} },
           originShieldRegion: mainStack.region,
           protocolPolicy: cf.OriginProtocolPolicy.HTTP_ONLY,
+          
+          {{ keep_begin(this.class_name ~ ".OtherOriginProps", VERSION_SIGNATURE) }}
+          /* user-code */
+          {{ keep_end() }}
         }),
         cachePolicy: cf.CachePolicy.CACHING_OPTIMIZED,
         allowedMethods: cf.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
         cachedMethods: cf.CachedMethods.CACHE_GET_HEAD,
         viewerProtocolPolicy: cf.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
         compress: true
+
+        {{ keep_begin(this.class_name ~ ".OtherDefaultBehaviorProps", VERSION_SIGNATURE) }}
+        /* user-code */
+        {{ keep_end() }}
       },
       defaultRootObject: "index.html",
       enabled: true,
       certificate: this.cloudFrontCertificate,
       minimumProtocolVersion: cf.SecurityPolicyProtocol.TLS_V1_2_2021,
       priceClass: cf.PriceClass.PRICE_CLASS_ALL
+
+      {{ keep_begin(this.class_name ~ ".OtherDistributionProps", VERSION_SIGNATURE) }}
+      /* user-code */
+      {{ keep_end() }}
     });
 
 
@@ -68,9 +104,24 @@ export class {{cloudfront.class_name}} {
       target: r53.RecordTarget.fromAlias(new r53_targets.CloudFrontTarget(this.cfDist)),
       ttl: cdk.Duration.minutes(30),
       comment: "Frontend",
+
+      {{ keep_begin(this.class_name ~ ".OtherARecordProps", VERSION_SIGNATURE ) }}
+      /* user-code */
+      {{ keep_end() }}
     });
+
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
+
 
     // Tag resources
     cdk.Tags.of(this.cfDist).add("Name", "{{cloudfront.id_prefix}}.cf-distribution");
+
+
+    {{ keep_begin(this.class_name ~ ".ExtraTags", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
   }
 }

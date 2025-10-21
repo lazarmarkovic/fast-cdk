@@ -1,3 +1,8 @@
+{%- macro keep_begin(id, sig) -%}// <fastcdk:keep begin id={{ id }} sig={{ sig }}>{%- endmacro -%}
+{%- macro keep_end() -%}// </fastcdk:keep>{%- endmacro -%}
+
+{% set VERSION_SIGNATURE = 'v0.0.1' %}
+
 // External imports
 import * as cdk from 'aws-cdk-lib';
 import { RemovalPolicy } from 'aws-cdk-lib';
@@ -8,12 +13,25 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import { EnvConfig } from "@fastcdk-root/config/configSchema";
 
 
+{{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
+/* user-code */
+{{ keep_end() }}
+
+
 export class {{s3_bucket.class_name}} {
   public readonly frontendBucket: s3.Bucket;
+
+  {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
+  /* user-code */
+  {{ keep_end() }}
 
   constructor(
     mainStack: cdk.Stack,
     envConfig: EnvConfig,
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
   ) {
     this.frontendBucket = new s3.Bucket(mainStack, "{{s3_bucket.id_prefix}}S3Bucket", {
       bucketName: envConfig.{{this.s3_bucket_name}},
@@ -28,6 +46,10 @@ export class {{s3_bucket.class_name}} {
       }),
       websiteIndexDocument: "index.html",
       websiteErrorDocument: "index.html",
+
+      {{ keep_begin(this.class_name ~ ".ExtraS3BucketProps", VERSION_SIGNATURE) }}
+      /* user-code */
+      {{ keep_end() }}
     });
 
     const policyStatement = new iam.PolicyStatement({
@@ -41,9 +63,21 @@ export class {{s3_bucket.class_name}} {
       { "aws:UserAgent": envConfig.{{this.cloudfront_connection_secret}} }
     );
     this.frontendBucket.addToResourcePolicy(policyStatement);
+    {{ keep_begin(this.class_name ~ ".ExtraPolicy", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
+
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
 
 
     // Tag resources
     cdk.Tags.of(this.frontendBucket).add("Name", "{{s3_bucket.name_prefix}}.s3-bucket");
+
+    {{ keep_begin(this.class_name ~ ".ExtraTags", VERSION_SIGNATURE) }}
+    /* user-code */
+    {{ keep_end() }}
   }
 }
