@@ -39,10 +39,7 @@ class Transformer:
 
       dii = {}
       for k, v in node.definition.default_inputs.table.items():
-        if hasattr(v, "val"):
           dii[k] = v.val
-        else:
-          dii[k] = v
       
       context_as_obj = SimpleNamespace(**{
         **asdict(this_template),

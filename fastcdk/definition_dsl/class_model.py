@@ -72,12 +72,12 @@ class ApplicableToDef:
     for _, input_obj in self.inputs.items():
       print("INPUTTT: " + str(input_obj.key))
       if input_obj.type == SingleGeneralInputType.REGULAR_INPUT:
-        definition.default_inputs.table[input_obj.key] = input_obj.val
+        definition.default_inputs.table[input_obj.key] = input_obj
       elif input_obj.type == SingleGeneralInputType.ENV_VAR_INPUT:
-        definition.env_vars.table[input_obj.key].path_joined = input_obj.val.path_joined
-        definition.env_vars.table[input_obj.key].path_parts = input_obj.val.path_parts
-        if input_obj.val.value is not None:
-          definition.env_vars.table[input_obj.key].value = input_obj.val.value
+        if input_obj.val.path_joined != "":
+          definition.env_vars.table[input_obj.key].path_joined = input_obj.val.path_joined
+          definition.env_vars.table[input_obj.key].path_parts = input_obj.val.path_parts
+        definition.env_vars.table[input_obj.key].value = input_obj.val.value
       elif input_obj.type == SingleGeneralInputType.TEMPLATE_INPUT:
         #setattr(obj, atrr_name, attr_value)
         setattr(definition.templates.table[input_obj.key[0]], input_obj.key[1], input_obj.val)

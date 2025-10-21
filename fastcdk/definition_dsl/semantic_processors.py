@@ -113,6 +113,17 @@ class SemanticProcessors:
           value=getattr(entity, "val", None),
         )
       )
+    elif getattr(entity, "ref_val", None) is not None:
+      entity.semantic_data = SingleGeneralInput(
+        type=SingleGeneralInputType.ENV_VAR_INPUT,
+        key=entity.key,
+        val=SingleEnvVar(
+          name=entity.key,
+          path_joined="",
+          path_parts=(),
+          value=getattr(entity, "ref_val", None),
+        )
+      )
     elif getattr(entity, "val", None) is not None:
       entity.semantic_data = SingleGeneralInput(
         type=SingleGeneralInputType.REGULAR_INPUT,
