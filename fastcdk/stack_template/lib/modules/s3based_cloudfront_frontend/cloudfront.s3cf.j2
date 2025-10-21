@@ -31,7 +31,7 @@ export class {{cloudfront.class_name}} {
   ) {
     let mainDomainNames = [envConfig.{{this.domain_name}}];
     if (envConfig.Environment === DeploymentEnvEnum.BLUE_PROD) {
-      mainDomainNames = [envConfig.{{this.domain_name}}}, `www.${envConfig.{{this.domain_name}}}`]
+      mainDomainNames = [envConfig.{{this.domain_name}}, `www.${envConfig.{{this.domain_name}}}`]
     }
 
     // Must be in us-east-1, always

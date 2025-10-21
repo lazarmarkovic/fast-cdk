@@ -1,6 +1,7 @@
 # Test Network Template stuff
 
 climbing_app = stack {
+  exe_env = _ = staging123
   network_1
 }
 

@@ -2,6 +2,7 @@
 import json
 from dataclasses import asdict
 from functools import reduce
+from pathlib import Path
 from types import SimpleNamespace
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
@@ -27,6 +28,12 @@ class Transformer:
     def make_contexts_in_node(self, node):
       edge_node_contexts = [self.graph.get_node(e).contexts_as_edge for e in node.edges]
       merged_contexts_dict = reduce(lambda x, y: {**x, **y}, edge_node_contexts, {})
+
+      # compute import paths for all templates
+      for _, v in node.definition.templates.table.items():
+        file_name_for_import = str(Path(v.gen_file_name).with_suffix(""))
+        import_path = file_name_for_import if v.gen_path == '.' else v.gen_path + '/' + file_name_for_import
+        v.import_path = import_path
 
       # plain = to_plain(node.definition.templates.table)
       # print(json.dumps(plain, indent=2))

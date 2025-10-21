@@ -16,7 +16,7 @@ export class {{this.class_name}} {
   ) { 
     this.oidcProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
       mainStack,
-      "{{this.id_prefix}}OpenIdConnectProvider`,
+      "{{this.id_prefix}}OpenIdConnectProvider",
       envConfig.{{this.open_id_connect_provider_arn}}
     );
   }

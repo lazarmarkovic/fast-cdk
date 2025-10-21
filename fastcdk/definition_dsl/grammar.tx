@@ -58,9 +58,9 @@ SingleDependency:
   | assigned_name=ID
 ;
 SingleGeneralInputAssign: 
-    key=ID "=" ref=RefPath "=" val=PATH
+    key=ID "=" "_" "=" ref_val=PATH
+  | key=ID "=" ref=RefPath "=" val=PATH
   | key=ID "=" ref=RefPath
-  | key=ID "=" "_" "=" ref_val=PATH
   | key=ID "=" val=Value
   | template_name=ID "." template_field=TemplateField
 ;
