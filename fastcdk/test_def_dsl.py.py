@@ -1,10 +1,10 @@
 from importlib.resources import files
 
-from fastcdk.definition_dsl.cdk_project_gen import CDKProjectGenerator
-from fastcdk.definition_dsl.graph_semantic_processor import GraphSemanticProcessor
-from fastcdk.definition_dsl.metamodel import MetaModel
-from fastcdk.definition_dsl.semantic_processors import SemanticProcessors
-from fastcdk.definition_dsl.transformer import Transformer
+from fastcdk.dsl.cdk_project_gen import CDKProjectGenerator
+from fastcdk.dsl.graph_semantic_processor import GraphSemanticProcessor
+from fastcdk.dsl.metamodel import MetaModel
+from fastcdk.dsl.semantic_processors import SemanticProcessors
+from fastcdk.dsl.transformer import Transformer
 from fastcdk.util.files import get_definitions_from_path
 
 metamodel = MetaModel().mm

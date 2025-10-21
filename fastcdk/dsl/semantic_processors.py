@@ -3,7 +3,7 @@ from textx import get_location  # noqa: I001
 from textx.exceptions import TextXSemanticError
 
 
-from fastcdk.definition_dsl.class_model import (
+from fastcdk.dsl.class_model import (
   SingleDefinition, 
 
   TemplateMap,

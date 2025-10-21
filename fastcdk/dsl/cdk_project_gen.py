@@ -4,7 +4,7 @@ from importlib.resources import as_file
 from pathlib import Path
 from typing import Union
 
-from fastcdk.definition_dsl.project_file_list import cdk_project_files
+from fastcdk.dsl.project_file_list import cdk_project_files
 
 
 class CDKProjectGenerator:

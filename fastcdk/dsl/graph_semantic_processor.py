@@ -3,8 +3,8 @@ from textx.exceptions import TextXSemanticError
 
 from fastcdk.data_structure.errors import NodeAlreadyExistsError
 from fastcdk.data_structure.graph import DirectedAcyclicGraph, GraphNode, NodeNotFoundError, NodeType
-from fastcdk.definition_dsl.class_model import deep_copy_def
-from fastcdk.junk.graph_viz import InteractiveDAG
+from fastcdk.dsl.class_model import deep_copy_def
+from fastcdk.dsl.graph_viz import InteractiveDAG
 
 
 class GraphSemanticProcessor:
