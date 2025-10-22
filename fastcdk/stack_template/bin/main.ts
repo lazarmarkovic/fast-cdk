@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { StackRoot } from "../lib/stack.root";
-import { loadConfig } from "../config/configLoader";
+import { StackRoot } from "@fastcdk-lib/stack";
+import { loadConfig } from "@fastcdk-root/config/configLoader";
 
 const app = new cdk.App();
 const environmentName = app.node.tryGetContext("env");
