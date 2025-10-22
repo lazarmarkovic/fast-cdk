@@ -13,6 +13,8 @@ climbing_app = stack {
   root_net
 
   s3_cf
+
+  root_net2
 }
 
 root_log = cloudwatch_log_group {}
@@ -24,6 +26,15 @@ root_net = network_with_nat {
   enable_dns_support = false
 }
 
+root_net2 = network_with_nat {
+  this.gen_file_name = network.root2.ts
+  this.var_name = net2
+  this.class_name = Net2
+
+  enable_dns_support = false
+}
+
 s3_cf = s3_based_cloudfront_full_frontend {
   root_hosted_zone
+  root_oidc
 }

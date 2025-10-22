@@ -205,5 +205,34 @@ class GraphSemanticProcessor:
       if to_node is None:
         raise TextXSemanticError(f"Instance or definition with name '{child}' is not found.")
       self.graph.add_edge(new_stack_node, to_node)
+
+    
+    # Check collisions when all is put together
+    nodes_in_use = self.graph.usage_layers(new_stack_node.assigned_name)
+  
+    construct_init_order = []
+    #print("\n\nTest transformer to_files_list")
+    for layer in nodes_in_use:
+      #print("\nLayer:")
+      for i in layer:
+        construct_init_order.append(i)
+        #print("Node in use: " + i)
+    construct_init_order.remove(new_stack_node.assigned_name)
+    
+    templates = []
+    real_nodes = [self.graph.get_node(n) for n in construct_init_order]
+    for n in real_nodes:
+      for _,v in n.definition.templates.table.items():
+        for t in templates:
+          if v.gen_path == t[0].gen_path and v.gen_file_name == t[0].gen_file_name:
+            raise TextXSemanticError(f"Instance '{n.assigned_name}' has same gen_path + gen_file_name as instance '{t[1]}'")
+          elif v.var_name == t[0].var_name:
+            raise TextXSemanticError(f"Instance '{n.assigned_name}' has same var_name as instance '{t[1]}'")
+          elif v.class_name == t[0].class_name:
+            raise TextXSemanticError(f"Instance '{n.assigned_name}' has same class_name as instance '{t[1]}'")
+        templates.append((v, n.assigned_name))
+
+    
+
       
     print("---- END: Handling Instance Dep Overrides\n\n")
