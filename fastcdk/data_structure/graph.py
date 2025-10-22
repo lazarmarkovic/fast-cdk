@@ -9,14 +9,14 @@ class NodeType(Enum):
 
 
 class GraphNode:
-  def __init__(self, definition, node_type, base_path, instance=None, assigned_name=None, edges=None):
+  def __init__(self, definition, node_type, base_path, instance=None, assigned_name=None, edges=None, dep_edge_aliases=None):
     self.type: NodeType = node_type
     self.base_path = base_path
-    self.original_assigned_name = assigned_name if assigned_name is not None else definition.name
     self.edges: list[GraphNode] = []
     self.definition = definition
     self.instance = instance
     self.assigned_name = assigned_name if assigned_name is not None else definition.name
+    self.dep_edge_aliases = dep_edge_aliases if dep_edge_aliases is not None else {}
 
     if edges is not None:
       for e in edges:
@@ -43,6 +43,9 @@ class DirectedAcyclicGraph:
       raise NodeNotFoundError(to_node.assigned_name)
     if not self._would_create_cycle(from_node.assigned_name, to_node.assigned_name):
       self.graph[from_node.assigned_name].edges.append(to_node.assigned_name)
+      
+      print(f"# Adding default alias: ({to_node.assigned_name} -> {to_node.assigned_name}) in node: {from_node.assigned_name}")
+      self.graph[from_node.assigned_name].dep_edge_aliases[to_node.assigned_name] = to_node.assigned_name
     else:
       raise GraphCycleError(from_node.assigned_name, to_node.assigned_name)
 

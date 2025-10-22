@@ -1,11 +1,10 @@
-# Test Network Template stuff
+# Test Inheritance
 
 climbing_app = stack {
   exe_env = _ = staging123
 
-  network_1
-  network_2
   network_3
+  cf2
 }
 
 network_1 = network_with_nat {
@@ -14,24 +13,40 @@ network_1 = network_with_nat {
   this.class_name = Network1
   this.var_name = net1
 
-  enable_dns_support = true # When we don't set any param, default values are being used
+  enable_dns_support = false # When we don't set any param, default values are being used
   vpc_cidr = BuildParams.Root.N1.VpcCidr = 10.1.0.0/16
 }
 
-network_2 = network_with_nat {
+network_2 = network_1 {
   this.gen_file_name = network.n2.ts
   this.class_name = Network2
   this.var_name = net2
 
-  enable_dns_support = false
+  enable_dns_support = true
   vpc_cidr = BuildParams.Root.N2.VpcCidr = 10.2.0.0/16
 }
 
-network_3 = network_with_nat {
+network_3 = network_2 {
   this.gen_file_name = network.n3.ts
   this.class_name = Network3
   this.var_name = net3
 
-  enable_dns_support = false
   vpc_cidr = BuildParams.Root.N3.VpcCidr = 10.3.0.0/16
+}
+
+network_4 = network_2 {
+  this.gen_file_name = network.n3.ts
+  this.class_name = Network3
+  this.var_name = net3
+
+  vpc_cidr = BuildParams.Root.N3.VpcCidr = 10.3.0.0/16
+}
+
+
+cf1 = s3_based_cloudfront_full_frontend {
+  cloudfront.class_name = S3RandomCF
+}
+
+cf2 = cf1 {
+  cloudfront.class_name = CFHelloooo
 }

@@ -70,7 +70,7 @@ class SingleGeneralInput:
 class ApplicableToDef:
   def apply_to(self, definition: SingleDefinition):
     for _, input_obj in self.inputs.items():
-      print("INPUTTT: " + str(input_obj.key))
+      #print("INPUTTT: " + str(input_obj.key))
       if input_obj.type == SingleGeneralInputType.REGULAR_INPUT:
         definition.default_inputs.table[input_obj.key] = input_obj
       elif input_obj.type == SingleGeneralInputType.ENV_VAR_INPUT:
@@ -80,7 +80,6 @@ class ApplicableToDef:
         if input_obj.val.value != "" and input_obj.val.value is not None:
           definition.env_vars.table[input_obj.key].value = input_obj.val.value
       elif input_obj.type == SingleGeneralInputType.TEMPLATE_INPUT:
-        #setattr(obj, atrr_name, attr_value)
         setattr(definition.templates.table[input_obj.key[0]], input_obj.key[1], input_obj.val)
       else:
         raise Exception("Not found.")
@@ -88,7 +87,6 @@ class ApplicableToDef:
 
 @dataclass
 class SingleDependency(ApplicableToDef):
-  original_assigned_name: str
   assigned_name: str
   def_name: str
   inputs: Mapping[str | tuple, SingleGeneralInput] = field(default_factory=dict)
@@ -107,7 +105,7 @@ class DependencyMap:
 @dataclass
 class SingleOtherInstance(ApplicableToDef):
   assigned_name: str
-  def_name: str
+  target_name: str
   inputs: Mapping[str | tuple, SingleGeneralInput] = field(default_factory=dict)
   dep_overrides: tuple[str, ...] = field(default_factory=tuple)
   
@@ -131,7 +129,6 @@ class SingleStackInstance(ApplicableToDef):
     for child in self.children:
       if child not in stack_def.deps.table:
         stack_def.deps.table[child] = SingleDependency(
-          original_assigned_name=child,
           assigned_name=child,
           def_name=child,
           inputs={},
@@ -182,7 +179,6 @@ def deep_copy_def(src: SingleDefinition) -> SingleDefinition:
 
   def copy_dependency(d: SingleDependency) -> SingleDependency:
     return SingleDependency(
-      original_assigned_name=d.original_assigned_name,
       assigned_name=d.assigned_name,
       def_name=d.def_name,
       inputs=copy_inputs(d.inputs),

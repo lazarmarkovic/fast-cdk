@@ -124,7 +124,7 @@ Child: name=ID ;
 
 
 SingleOtherInstance:
-  assigned_name=ID "=" def_name=ID
+  assigned_name=ID "=" target_name=ID
   "{"
     inputs*=SingleGeneralInputAssign
     dep_overrides*=DepOverride

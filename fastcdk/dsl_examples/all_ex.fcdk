@@ -1,19 +1,29 @@
 # Test All
 
 climbing_app = stack {
-  exe_env = _ = staging1234
-  network_1
+  exe_env = _ = staging12345
+  
+
+  root_log
+  root_ecr
+  root_oidc
+
+  root_hosted_zone
+
+  root_net
+
+  s3_cf
 }
 
-network_1 = network_with_nat {
-  this.gen_file_name = network.rrrroot.ts
-  enable_dns_support = true # When we don't set any param, default values are being used
-}
+root_log = cloudwatch_log_group {}
+root_ecr = ecr_from_resource {}
+root_oidc = git_oidc_from_resource {}
+root_hosted_zone = hosted_zone {}
 
-network_2 = network_with_nat {
+root_net = network_with_nat {
   enable_dns_support = false
 }
 
-network_3 = network_with_nat {
-  enable_dns_support = false
+s3_cf = s3_based_cloudfront_full_frontend {
+  root_hosted_zone
 }

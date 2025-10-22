@@ -77,7 +77,7 @@ class CDKProjectGenerator:
   def generate(self, construct_nodes, stack_node):
     # Generate basic proejct files
     for resource in cdk_project_files:
-      print(resource)
+      #print(resource)
 
       testing_ground_path = Path("~/code/fast_cdk/testing_ground")
       self.copy_resource_preserve_structure(resource, testing_ground_path)
@@ -117,7 +117,7 @@ class CDKProjectGenerator:
       tpl = env.get_template(tpl_path.name)
       out = tpl.render(ctx)
       self.render_with_keeps(out, Path("config") / "configSchema.ts", testing_ground_path)
-      print(out)
+      #print(out)
 
     # this yields a real filesystem path even if the package is zipped
     with as_file(resource2) as tpl_path2:
@@ -125,4 +125,4 @@ class CDKProjectGenerator:
       tpl = env.get_template(tpl_path2.name)
       out = tpl.render(ctx)
       self.render_with_keeps(out, Path("env-config") / f"{exe_env}.toml", testing_ground_path)
-      print(out)
+      #print(out)

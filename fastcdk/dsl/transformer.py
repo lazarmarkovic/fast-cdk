@@ -26,8 +26,12 @@ class Transformer:
     
 
     def make_contexts_in_node(self, node):
-      edge_node_contexts = [self.graph.get_node(e).contexts_as_edge for e in node.edges]
-      merged_contexts_dict = reduce(lambda x, y: {**x, **y}, edge_node_contexts, {})
+      #print("MAKING CONTEXT FOR THIS: " + node.definition.templates.table["this"].gen_file_name)
+
+      merged_contexts_dict = {}
+      for e in node.edges:
+        n = self.graph.get_node(e)
+        merged_contexts_dict[node.dep_edge_aliases[e]] = n.contexts_as_edge[e]
 
       # compute import paths for all templates
       for _, v in node.definition.templates.table.items():
@@ -39,7 +43,6 @@ class Transformer:
       # print(json.dumps(plain, indent=2))
       this_template = node.definition.templates.table["this"]
      
-
       env_vars = {}
       for ev_key, ev_val in node.definition.env_vars.table.items():
         env_vars[ev_key] = ev_val.path_joined
@@ -55,16 +58,16 @@ class Transformer:
       })
 
       contexts_as_edge = {
-        node.original_assigned_name: context_as_obj
+        node.assigned_name: context_as_obj
       }
       this_context = {
         "this": context_as_obj,
         **merged_contexts_dict,
         **{k: v for k, v in node.definition.templates.table.items() if k != "this"}
       }
-      print("THIS CONTEXT: ")
-      plain = to_plain(this_context)
-      print(json.dumps(plain, indent=2))
+      # print("THIS CONTEXT: ")
+      # plain = to_plain(merged_contexts_dict)
+      # print(json.dumps(plain, indent=2))
 
       node.contexts_as_edge = contexts_as_edge
       node.this_context = this_context
@@ -83,13 +86,13 @@ class Transformer:
       rendered_classes = {}
       for t_key, t_val in node.definition.templates.table.items():
         template_file = t_val.template_file
-        print("++++++ RENDERING CLASS: " + str(template_path)  + "/" + template_file)
+        # print("++++++ RENDERING CLASS: " + str(template_path)  + "/" + template_file)
         template = jinja2_env.get_template(template_file)
         rendered_class = template.render({**node.this_context, "render_class_def":True})
         rendered_classes[t_key] = rendered_class
 
       template_file = node.definition.templates.table["this"].template_file
-      print("++++++ RENDERING CONSTR: " + str(template_path)  + "/" + template_file)
+      # print("++++++ RENDERING CONSTR: " + str(template_path)  + "/" + template_file)
       template = jinja2_env.get_template(template_file)
       node.rendered_constructor = template.render({**node.this_context, "render_class_def":False})
       node.rendered_classes = rendered_classes
@@ -100,12 +103,12 @@ class Transformer:
       nodes_in_use = self.graph.usage_layers(stack_root_node.assigned_name)
       
       construct_init_order = []
-      print("\n\nTest transformer to_files_list")
+      #print("\n\nTest transformer to_files_list")
       for layer in nodes_in_use:
-        print("\nLayer:")
+        #print("\nLayer:")
         for i in layer:
           construct_init_order.append(i)
-          print("Node in use: " + i)
+          #print("Node in use: " + i)
       construct_init_order.remove(stack_root_node.assigned_name)
 
       constructs_for_stack = []
@@ -113,7 +116,7 @@ class Transformer:
       for node in real_nodes:
         self.make_contexts_in_node(node)
         self.make_renders_in_node(node)
-        constr = node.contexts_as_edge[node.original_assigned_name]
+        constr = node.contexts_as_edge[node.assigned_name]
         constr.rendered_constructor = node.rendered_constructor
         constructs_for_stack.append(constr)
 
@@ -137,10 +140,9 @@ class Transformer:
       stack_root_node.rendered_classes = {}
       stack_root_node.rendered_classes["this"] = template.render(context)
 
-      print(stack_root_node.rendered_classes["this"])
-
+      # print(stack_root_node.rendered_classes["this"])
       exe_env = stack_root_node.definition.env_vars.table["exe_env"].value
-      print("EXE: " + exe_env)
+      # print("EXE: " + exe_env)
 
       return (real_nodes, stack_root_node, exe_env)
 
@@ -151,10 +153,9 @@ class Transformer:
         for key, val in node.definition.env_vars.table.items():
           pairs.append((val.path_joined, val.value))
 
-      for p in pairs:
-        print(p)
+      # for p in pairs:
+      #   print(p)
 
-      
       tree: dict = {}
       for path, val in pairs:
         parts = path.split(".")

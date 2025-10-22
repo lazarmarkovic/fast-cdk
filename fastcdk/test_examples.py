@@ -13,7 +13,7 @@ metamodel.register_obj_processors(semantic_processor.obj_processors)
 
 def_packages = get_definitions_from_path("fastcdk.stack_template.lib")
 
-print("\n--- Parsing definitions ---")
+print("####### START: Parsing Definitions")
 definitions = []
 for def_package in def_packages:
   print(f"Parsing definitions from: {def_package}")
@@ -22,13 +22,15 @@ for def_package in def_packages:
   for d in model.fcdk.definitions:
     d.base_path = def_package.parent
     definitions.append(d)
-print("End parsing definitions\n\n")
+print("####### END: Parsing Definitions---\n\n")
 
 
 #####
-print("\n--- Parsing instances ---")
+print("####### START: Parsing Instances")
 instances = []
-dsl_path = files("fastcdk.dsl_examples") / "network_ex.fcdk"
+#dsl_path = files("fastcdk.dsl_examples") / "inher.gcdk"
+dsl_path = files("fastcdk.dsl_examples") / "all_ex.fcdk"
+#dsl_path = files("fastcdk.dsl_examples") / "network_ex.fcdk"
 #dsl_path = files("fastcdk.dsl_examples") / "s3based_cf_ex.fcdk"
 full_resolved_path = dsl_path.resolve()
 print("Full path: " + str(full_resolved_path))
@@ -37,12 +39,12 @@ model = metamodel.model_from_str(fcdk_text)
 for i in model.fcdk.instances:
   i.base_path = full_resolved_path.parent
   instances.append(i)
+print("####### END: Parsing Instances\n\n")
 
-print("End parsing instances\n\n")
 
-
-print("Number of instances: " + str(len(instances)))
+print("Number of instances: " + str(len(instances)) + "\n\n")
 for i in instances:
+  print(f"####### START: Add Instance {i.semantic_data.stack_instance.stack_name}")
   gsp = GraphSemanticProcessor(definitions, i.semantic_data.stack_instance, i.semantic_data.other_instances)
   gsp.add_definitions()
   gsp.add_instances()
@@ -51,7 +53,7 @@ for i in instances:
   transformer = Transformer(gsp.graph)
   nodes, stack_node, exe_env = transformer.transform_nodes()
   tree = transformer.transform_env_vars(nodes)
-  print("\n--- End processing instance ---\n\n")
+  print(f"####### START: Add Instance {i.semantic_data.stack_instance.stack_name}\n\n")
 
 
 cdkProjectGenerator = CDKProjectGenerator()

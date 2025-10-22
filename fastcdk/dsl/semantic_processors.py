@@ -59,7 +59,7 @@ class SemanticProcessors:
 
     self.template_field_map = {
       "TemplateFileAssign": "template_file",
-      "GenPathAssignpath": "gen_path",
+      "GenPathAssign": "gen_path",
       "GenFileNameAssign": "gen_file_name",
       "VarNameAssign": "var_name",
       "ClassNameAssign": "class_name",
@@ -149,7 +149,6 @@ class SemanticProcessors:
         raise TextXSemanticError(f"Duplicate input variable '{".".join(single_input.key)}' in dep_entry section.", **get_location(i))
       inputs_dict[single_input.key] = single_input
     entity.semantic_data = SingleDependency(
-      original_assigned_name=entity.assigned_name,
       assigned_name=entity.assigned_name,
       def_name=entity.def_name if entity.def_name != '' else entity.assigned_name,
       inputs=inputs_dict
@@ -210,7 +209,7 @@ class SemanticProcessors:
   #########################
   ##### Instance processors
   def single_other_instance(self, entity):
-    if (entity.assigned_name == entity.def_name):
+    if (entity.assigned_name == entity.target_name):
       raise TextXSemanticError(f"Dep entry assigned_name '{entity.assigned_name}' cannot be the same as definition name.", **get_location(entity))
 
     inputs_dict = {}
@@ -222,7 +221,7 @@ class SemanticProcessors:
   
     entity.semantic_data = SingleOtherInstance(
       assigned_name=entity.assigned_name,
-      def_name=entity.def_name if entity.def_name != '' else entity.assigned_name,
+      target_name=entity.target_name if entity.target_name != '' else entity.assigned_name,
       inputs=inputs_dict,
       dep_overrides=tuple([depo.name for depo in entity.dep_overrides])
     )

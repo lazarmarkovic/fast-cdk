@@ -30,7 +30,7 @@ def get_definitions_from_path(package_name):
   for resource, rel in cdk_project_files:
     extension = Path(resource.name).suffix
     if extension == ".fcdk_def":
-      print(f"{rel} {resource.name} (extension: {extension})")
+      #print(f"{rel} {resource.name} (extension: {extension})")
       def_packages.append(rel / resource)
 
   return def_packages
