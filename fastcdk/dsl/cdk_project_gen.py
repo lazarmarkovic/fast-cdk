@@ -69,8 +69,6 @@ class CDKProjectGenerator:
       pass
 
     merged = splice_regions(content, old_regions)
-    changed = (old_text is None) or (merged.text != old_text)
-
     self.write_text_at_path(merged.text, file_path, dest_root)
     return out_path
   

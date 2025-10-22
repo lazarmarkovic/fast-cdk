@@ -1,5 +1,5 @@
-{%- macro keep_begin(id, sig) -%}// <fastcdk:keep begin id={{ id }} sig={{ sig }}>{%- endmacro -%}
-{%- macro keep_end() -%}// </fastcdk:keep>{%- endmacro -%}
+{%- macro keep_begin(id, sig) -%}// fastcdk:keep-start id={{ id }} sig={{ sig }}>{%- endmacro -%}
+{%- macro keep_end() -%}// fastcdk:keep-end{%- endmacro -%}
 
 {% set VERSION_SIGNATURE = 'v0.0.1' %}
 

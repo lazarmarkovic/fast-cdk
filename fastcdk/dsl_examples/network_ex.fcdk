@@ -2,18 +2,35 @@
 
 climbing_app = stack {
   exe_env = _ = staging123
+
   network_1
+  network_2
+  network_3
 }
 
 network_1 = network_with_nat {
-  this.gen_file_name = network.rrrroot.ts
+  this.gen_file_name = network.n1.ts
+  this.class_name = Network1
+  this.var_name = net1
+
   enable_dns_support = true # When we don't set any param, default values are being used
+  vpc_cidr = BuildParams.Root.N1.VpcCidr = 10.1.0.0/16
 }
 
 network_2 = network_with_nat {
+  this.gen_file_name = network.n2.ts
+  this.class_name = Network2
+  this.var_name = net2
+
   enable_dns_support = false
+  vpc_cidr = BuildParams.Root.N2.VpcCidr = 10.2.0.0/16
 }
 
 network_3 = network_with_nat {
+  this.gen_file_name = network.n3.ts
+  this.class_name = Network3
+  this.var_name = net3
+
   enable_dns_support = false
+  vpc_cidr = BuildParams.Root.N3.VpcCidr = 10.3.0.0/16
 }

@@ -1,0 +1,19 @@
+# Test All
+
+climbing_app = stack {
+  exe_env = _ = staging1234
+  network_1
+}
+
+network_1 = network_with_nat {
+  this.gen_file_name = network.rrrroot.ts
+  enable_dns_support = true # When we don't set any param, default values are being used
+}
+
+network_2 = network_with_nat {
+  enable_dns_support = false
+}
+
+network_3 = network_with_nat {
+  enable_dns_support = false
+}

@@ -5,11 +5,9 @@ from dataclasses import dataclass
 from pathlib import Path
 
 # marker regexes (single-line begin/end)
-KEEP_BEGIN = re.compile(
-  r"^[ \t]*// <fastcdk:keep begin id=(?P<id>[^\s>]+) sig=(?P<sig>[^\s>]+)>\s*$",
-  re.M,
-)
-KEEP_END = re.compile(r"^[ \t]*// </fastcdk:keep>\s*$", re.M)
+
+KEEP_BEGIN = re.compile(r"^[ \t]*// fastcdk:keep-start id=(?P<id>[^\s>]+) sig=(?P<sig>[^\s>]+)$", re.M)
+KEEP_END = re.compile(r"^[ \t]*// fastcdk:keep-end$", re.M)
 
 @dataclass
 class Region:
@@ -85,7 +83,6 @@ def splice_regions(fresh_text: str, old_regions: dict[str, Region]) -> MergeResu
       if old.sig == new_sig:
         body_to_write = old.body  # exact reuse; DO NOT append fresh stub
       else:
-        
         old.sig = new_sig
         had_conflict = True
         body_to_write = (
