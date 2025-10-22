@@ -109,10 +109,8 @@ class DirectedAcyclicGraph:
       raise NodeNotFoundError(f"Edge from {from_node_name} to {old_to_node_name} does not exist.")
     
 
+  # DFS
   def reachable_from(self, start_name: str):
-    """
-    DFS over outgoing edges from `start` and collect all nodes reachable.
-    """
     if start_name not in self.graph:
       raise NodeNotFoundError(start_name)
 

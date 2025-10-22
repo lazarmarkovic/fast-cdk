@@ -26,7 +26,7 @@ mhz1 = main_hosted_zone {
 }
 
 main_git_oidc_from_resource = git_oidc_from_resource {
-  gen_path = /s3based-cloudfront-frontend
+  gen_path = s3based-cloudfront-frontend
 }
 
 

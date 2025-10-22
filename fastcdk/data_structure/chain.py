@@ -3,12 +3,6 @@ from typing import Hashable, Iterable
 
 
 def reverse_chains_allow_merges(edges: Iterable[tuple[Hashable, Hashable]]):
-  """
-  Accept DAGs with merges (in-degree >= 1) but no splits (out-degree <= 1).
-  Returns (chains, problems):
-    chains   = list[list[node]] each tail -> ... -> root (reverse order)
-    problems = list[str] (empty if OK)
-  """
   next_of: dict[Hashable, Hashable] = {}              # u -> v (no splits)
   prevs: defaultdict[Hashable, set] = defaultdict(set) # v -> {u1,u2,...}
   problems: list[str] = []
@@ -18,10 +12,10 @@ def reverse_chains_allow_merges(edges: Iterable[tuple[Hashable, Hashable]]):
   # degrees + self-loop/split checks
   for u, v in edges:
     if u == v:
-      prob(f"self-loop: {u} -> {v}")
+      prob(f"{u} -> {v}")
       continue
     if u in next_of and next_of[u] != v:
-      prob(f"split (out-degree>1): {u} -> {next_of[u]} and {u} -> {v}")
+      prob(f"{u} -> {next_of[u]} and {u} -> {v}")
     else:
       next_of[u] = v
     prevs[v].add(u)
@@ -46,7 +40,7 @@ def reverse_chains_allow_merges(edges: Iterable[tuple[Hashable, Hashable]]):
           cyc.append(x)
           x = next_of[x]
         cyc.append(cur)
-        prob("cycle: " + " -> ".join(map(str, cyc)))
+        prob(" -> ".join(map(str, cyc)))
         return
       if cur in visited:
         return
@@ -71,7 +65,7 @@ def reverse_chains_allow_merges(edges: Iterable[tuple[Hashable, Hashable]]):
     cur = path[-1]
     preds = sorted(prevs.get(cur, ()), key=str)
     if not preds:
-      chains.append(path[:])              # reached a root
+      chains.append(path[:])
       return
     for p in preds:
       backtrack(path + [p])
