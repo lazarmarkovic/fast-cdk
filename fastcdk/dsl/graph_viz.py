@@ -13,7 +13,7 @@ class InteractiveDAG:
                     self.G.remove_edge(u, v)
                     raise ValueError(f"edge {u}->{v} creates a cycle")
 
-    def show(self, html_path="dag.html"):
+    def show(self, html_path="graph_viz.html"):
         net = Network(
             height="750px", width="100%",
             directed=True, notebook=False

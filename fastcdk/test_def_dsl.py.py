@@ -46,7 +46,7 @@ for i in instances:
   gsp = GraphSemanticProcessor(definitions, i.semantic_data.stack_instance, i.semantic_data.other_instances)
   gsp.add_definitions()
   gsp.add_instances()
-  # gsp.visualize()
+  gsp.visualize()
 
   transformer = Transformer(gsp.graph)
   nodes, stack_node, exe_env = transformer.transform_nodes()
