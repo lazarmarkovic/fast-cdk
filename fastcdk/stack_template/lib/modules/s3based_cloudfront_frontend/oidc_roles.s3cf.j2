@@ -20,7 +20,6 @@ import { {{cloudfront.class_name}} } from "@fastcdk-lib/{{cloudfront.import_path
 
 
 {{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
-/* user-code */
 {{ keep_end() }}
 
 
@@ -30,7 +29,6 @@ export class {{oidc_roles.class_name}} {
   public readonly gitPlatformActionsRole: iam.Role;
 
   {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
-  /* user-code */
   {{ keep_end() }}
 
   constructor(
@@ -42,7 +40,6 @@ export class {{oidc_roles.class_name}} {
     scfCloudFront: {{cloudfront.class_name}},
 
     {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
   ) {
     this.gitPlatformActionsRole = new iam.Role(mainStack, "{{oidc_roles.id_prefix}}GitPlatformActionsDeployRole", {
@@ -82,7 +79,6 @@ export class {{oidc_roles.class_name}} {
     }));
 
     {{ keep_begin(this.class_name ~ ".ExtraPolicy", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
 
 
@@ -103,7 +99,6 @@ export class {{oidc_roles.class_name}} {
     });
 
     {{ keep_begin(this.class_name ~ ".ExtraOutput", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
   }
 }

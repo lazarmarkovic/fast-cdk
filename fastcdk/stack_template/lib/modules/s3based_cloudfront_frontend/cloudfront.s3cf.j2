@@ -23,7 +23,6 @@ import { {{s3_bucket.class_name}} } from "@fastcdk-lib/{{s3_bucket.import_path}}
 
 
 {{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
-/* user-code */
 {{ keep_end() }}
 
 export class {{cloudfront.class_name}} {
@@ -34,7 +33,6 @@ export class {{cloudfront.class_name}} {
   public readonly cloudFrontCertificate: cert.ICertificate;
 
   {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
-  /* user-code */
   {{ keep_end() }}
   
   constructor(
@@ -44,8 +42,7 @@ export class {{cloudfront.class_name}} {
     s3: {{s3_bucket.class_name}},
 
     {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
-    /* user-code */
-    {{ keep_end() }
+    {{ keep_end() }}
   ) {
     let mainDomainNames = [envConfig.{{this.domain_name}}];
     if (envConfig.Environment === DeploymentEnvEnum.BLUE_PROD) {
@@ -53,7 +50,6 @@ export class {{cloudfront.class_name}} {
         envConfig.{{this.domain_name}}, 
         `www.${envConfig.{{this.domain_name}}}`,
           {{ keep_begin(this.class_name ~ ".OtherDomains", VERSION_SIGNATURE) }}
-          /* user-code */
           {{ keep_end() }}
         ]
     }
@@ -73,7 +69,6 @@ export class {{cloudfront.class_name}} {
           protocolPolicy: cf.OriginProtocolPolicy.HTTP_ONLY,
           
           {{ keep_begin(this.class_name ~ ".OtherOriginProps", VERSION_SIGNATURE) }}
-          /* user-code */
           {{ keep_end() }}
         }),
         cachePolicy: cf.CachePolicy.CACHING_OPTIMIZED,
@@ -83,7 +78,6 @@ export class {{cloudfront.class_name}} {
         compress: true
 
         {{ keep_begin(this.class_name ~ ".OtherDefaultBehaviorProps", VERSION_SIGNATURE) }}
-        /* user-code */
         {{ keep_end() }}
       },
       defaultRootObject: "index.html",
@@ -93,7 +87,6 @@ export class {{cloudfront.class_name}} {
       priceClass: cf.PriceClass.PRICE_CLASS_ALL
 
       {{ keep_begin(this.class_name ~ ".OtherDistributionProps", VERSION_SIGNATURE) }}
-      /* user-code */
       {{ keep_end() }}
     });
 
@@ -106,13 +99,11 @@ export class {{cloudfront.class_name}} {
       comment: "Frontend",
 
       {{ keep_begin(this.class_name ~ ".OtherARecordProps", VERSION_SIGNATURE ) }}
-      /* user-code */
       {{ keep_end() }}
     });
 
 
     {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
 
 
@@ -121,7 +112,6 @@ export class {{cloudfront.class_name}} {
 
 
     {{ keep_begin(this.class_name ~ ".ExtraTags", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
   }
 }

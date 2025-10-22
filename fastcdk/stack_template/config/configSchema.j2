@@ -1,9 +1,16 @@
+{%- macro keep_begin(id, sig) %}// <fastcdk:keep begin id={{ id }} sig={{ sig }}>{%- endmacro -%}
+{%- macro keep_end() -%}// </fastcdk:keep>{%- endmacro -%}
+
+{% set VERSION_SIGNATURE = 'v0.0.1' %}
+
 {% macro joi_obj(node, indent=2) -%}
 {%- set pad = ' ' * indent -%}
 {%- for key, child in node|dictsort -%}
 {{ pad }}{{ key }}: {% if child.__leaf__ -%}
 Joi.string().required(){% else -%}
 Joi.object({
+  {{ pad }}{{ keep_begin("OtherSchemaVars" ~ indent//2, VERSION_SIGNATURE) }}
+  {{ pad }}{{ keep_end() }}
 {{ joi_obj(child, indent + 2) }}{{ pad }}}).required(){% endif -%}{% if not loop.last -%},{% endif -%}{{ '\n' -}}
 {%- endfor -%}
 {%- endmacro -%}
@@ -18,6 +25,10 @@ export const configValidationSchema = Joi.object({
   Project: Joi.string().required(),
   Environment: Joi.string().required(),
   Version: Joi.string().required(),
+
+  {{ keep_begin("OtherSchemaVars0", VERSION_SIGNATURE) }}
+  {{ keep_end() }}
+
 {{ joi_obj(tree, 2) }}}).required();
 
 
@@ -31,6 +42,8 @@ export const configValidationSchema = Joi.object({
 {{ pad }}{{ key }}: string;{{ '\n' -}}
 {%- else -%}
 {{ pad }}{{ key }}: { {{ '\n' -}}
+{{ pad + '  ' }}{{ keep_begin("OtherInterfaceVars" ~ indent//2, VERSION_SIGNATURE) }}
+{{ pad + '  ' }}{{ keep_end() }}
 {{ ts_obj(child, indent + 2) -}}
 {{ pad }}};{{ '\n' -}}
 {%- endif -%}
@@ -45,6 +58,10 @@ export interface {{ iface_name }} { {{ '\n' -}}
   Project: string;
   Environment: string;
   Version: string;
+
+  {{ keep_begin("OtherInterfaceVars0", VERSION_SIGNATURE) }}
+  {{ keep_end() }}
+
 {{ ts_obj(tree, 2) -}}
 }
 

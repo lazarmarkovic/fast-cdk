@@ -22,7 +22,6 @@ import { {{oidc_roles.class_name}} } from "@fastcdk-lib/{{oidc_roles.import_path
 
 
 {{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
-/* user-code */
 {{ keep_end() }}
 
 
@@ -32,7 +31,6 @@ export class {{this.class_name}} {
   public readonly {{oidc_roles.var_name}}: {{oidc_roles.class_name}};
 
   {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
-  /* user-code */
   {{ keep_end() }}
 
   constructor(
@@ -42,7 +40,6 @@ export class {{this.class_name}} {
     {{git_oidc_from_resource.var_name}}: {{git_oidc_from_resource.class_name}},
 
     {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
   ) {
     // App frontend S3 bucket
@@ -68,7 +65,6 @@ export class {{this.class_name}} {
 
 
     {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
   }
 }
@@ -81,7 +77,6 @@ new {{this.class_name}}(
   this.{{ git_oidc_from_resource.var_name }},
 
   {{ keep_begin(this.class_name ~ ".OtherExternalConstructorVars", VERSION_SIGNATURE) }}
-  /* user-code */
   {{ keep_end() }}
 );
 {%- endif -%}

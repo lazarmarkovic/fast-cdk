@@ -14,7 +14,6 @@ import { EnvConfig } from "@fastcdk-root/config/configSchema";
 
 
 {{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
-/* user-code */
 {{ keep_end() }}
 
 
@@ -22,7 +21,6 @@ export class {{s3_bucket.class_name}} {
   public readonly frontendBucket: s3.Bucket;
 
   {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
-  /* user-code */
   {{ keep_end() }}
 
   constructor(
@@ -30,7 +28,6 @@ export class {{s3_bucket.class_name}} {
     envConfig: EnvConfig,
 
     {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
   ) {
     this.frontendBucket = new s3.Bucket(mainStack, "{{s3_bucket.id_prefix}}S3Bucket", {
@@ -48,7 +45,6 @@ export class {{s3_bucket.class_name}} {
       websiteErrorDocument: "index.html",
 
       {{ keep_begin(this.class_name ~ ".ExtraS3BucketProps", VERSION_SIGNATURE) }}
-      /* user-code */
       {{ keep_end() }}
     });
 
@@ -64,12 +60,10 @@ export class {{s3_bucket.class_name}} {
     );
     this.frontendBucket.addToResourcePolicy(policyStatement);
     {{ keep_begin(this.class_name ~ ".ExtraPolicy", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
 
 
     {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
 
 
@@ -77,7 +71,6 @@ export class {{s3_bucket.class_name}} {
     cdk.Tags.of(this.frontendBucket).add("Name", "{{s3_bucket.name_prefix}}.s3-bucket");
 
     {{ keep_begin(this.class_name ~ ".ExtraTags", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
   }
 }

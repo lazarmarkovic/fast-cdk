@@ -16,7 +16,6 @@ import { {{ci.class_name}} } from "@fastcdk-lib/{{ci.import_path}}";
 
 
 {{ keep_begin("StackRoot.OtherImports", VERSION_SIGNATURE) }}
-/* user-code */
 {{ keep_end() }}
 
 
@@ -28,7 +27,6 @@ export class StackRoot extends cdk.Stack {
   {% endfor %}
 
   {{ keep_begin("StackRoot.OtherConstructsInit", VERSION_SIGNATURE) }}
-  /* user-code */
   {{ keep_end() }}
 
   constructor(
@@ -54,7 +52,6 @@ export class StackRoot extends cdk.Stack {
 
 
     {{ keep_begin("StackRoot.OtherConstructs", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
   }
 }

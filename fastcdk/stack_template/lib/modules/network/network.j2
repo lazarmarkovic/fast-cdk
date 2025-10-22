@@ -13,7 +13,6 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { EnvConfig } from "@fastcdk-root/config/configSchema";
 
 {{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
-/* user-code */
 {{ keep_end() }}
 
 export class {{this.class_name}} {
@@ -32,14 +31,12 @@ export class {{this.class_name}} {
   {%- endif %}
 
   {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
-  /* user-post-construct */
   {{ keep_end() }}
 
   constructor(
     mainStack: cdk.Stack, 
     envConfig: EnvConfig,
     {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
     ) {
     this.vpc = new ec2.Vpc(mainStack, "{{this.id_prefix}}VPC", {
@@ -51,7 +48,6 @@ export class {{this.class_name}} {
       enableDnsHostnames: {{ this.enable_dns_host_names | lower }},
 
       {{ keep_begin(this.class_name ~ ".VpcProps", VERSION_SIGNATURE) }}
-      /* user-vpc-props */
       {{ keep_end() }}
 
       subnetConfiguration: [
@@ -78,7 +74,6 @@ export class {{this.class_name}} {
     });
 
     {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
-    /* user-post-construct */
     {{ keep_end() }}
 
     {%- if this.add_public_subnet %}
@@ -131,8 +126,7 @@ export class {{this.class_name}} {
     }
     {%- endif %}
 
-    {{ keep_begin(this.class_name ~ ".ExtraTags", VERSION_SIGNATURE) }}
-    /* user-extra-tags */
+    {{ keep_begin(this.class_name ~ ".ExtraTags", "v0.0.2") }}
     {{ keep_end() }}
   }
 }
@@ -142,7 +136,6 @@ new {{this.class_name}}(
   envConfig,
   
   {{ keep_begin(this.class_name ~ ".OtherExternalConstructorVars", VERSION_SIGNATURE) }}
-  /* user-code */
   {{ keep_end() }}
 );
 {%- endif -%}

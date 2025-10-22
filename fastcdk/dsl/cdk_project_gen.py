@@ -4,6 +4,7 @@ from importlib.resources import as_file
 from pathlib import Path
 from typing import Union
 
+from fastcdk.dsl.keep_merge import extract_regions, read_text, splice_regions
 from fastcdk.dsl.project_file_list import cdk_project_files
 
 
@@ -30,7 +31,7 @@ class CDKProjectGenerator:
         raise ValueError(f"refusing to write outside dest_root: {dest_path}")
 
     dest_path.parent.mkdir(parents=True, exist_ok=True)
-    dest_path.write_text(content, encoding="utf-8")
+    dest_path.write_text(content, encoding="utf-8", newline="\n")
     return dest_path
 
 
@@ -53,6 +54,26 @@ class CDKProjectGenerator:
       shutil.copy(real_path, dest_path)
 
     return dest_path
+  
+
+  def render_with_keeps(self, content: str, file_path: Union[str, Path], dest_root: Union[str, Path]) -> Path:
+    dest_root = Path(dest_root).expanduser().resolve()
+    rel_path = Path(file_path)
+    out_path = (dest_root / rel_path).resolve()
+
+    old_regions = []
+    try:
+      old_text = read_text(out_path)
+      old_regions = extract_regions(old_text)
+    except:
+      pass
+
+    merged = splice_regions(content, old_regions)
+    changed = (old_text is None) or (merged.text != old_text)
+
+    self.write_text_at_path(merged.text, file_path, dest_root)
+    return out_path
+  
 
 
   def generate(self, construct_nodes, stack_node):
@@ -69,13 +90,13 @@ class CDKProjectGenerator:
     # Generate TS constructs code files
     for cn in construct_nodes:
       for t_key, t_val in cn.definition.templates.table.items():
-        self.write_text_at_path(cn.rendered_classes[t_key], Path("lib", t_val.gen_path) / t_val.gen_file_name, testing_ground_path)
+        self.render_with_keeps(cn.rendered_classes[t_key], Path("lib", t_val.gen_path) / t_val.gen_file_name, testing_ground_path)
 
 
     # Generate stack TS code
     stack_node_rendered_class = stack_node.rendered_classes["this"]
     stack_node_tempalte = stack_node.definition.templates.table["this"]
-    self.write_text_at_path(stack_node_rendered_class, Path("lib", stack_node_tempalte.gen_path) / stack_node_tempalte.gen_file_name, testing_ground_path)
+    self.render_with_keeps(stack_node_rendered_class, Path("lib", stack_node_tempalte.gen_path) / stack_node_tempalte.gen_file_name, testing_ground_path)
     
 
   def generate_config_stuff(self, tree, exe_env):
@@ -97,7 +118,7 @@ class CDKProjectGenerator:
       env = Environment(loader=FileSystemLoader(str(tpl_path.parent)))
       tpl = env.get_template(tpl_path.name)
       out = tpl.render(ctx)
-      self.write_text_at_path(out, Path("config") / "configSchema.ts", testing_ground_path)
+      self.render_with_keeps(out, Path("config") / "configSchema.ts", testing_ground_path)
       print(out)
 
     # this yields a real filesystem path even if the package is zipped
@@ -105,5 +126,5 @@ class CDKProjectGenerator:
       env = Environment(loader=FileSystemLoader(str(tpl_path2.parent)))
       tpl = env.get_template(tpl_path2.name)
       out = tpl.render(ctx)
-      self.write_text_at_path(out, Path("env-config") / f"{exe_env}.toml", testing_ground_path)
+      self.render_with_keeps(out, Path("env-config") / f"{exe_env}.toml", testing_ground_path)
       print(out)

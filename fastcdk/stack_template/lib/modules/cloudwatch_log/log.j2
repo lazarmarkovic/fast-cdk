@@ -16,7 +16,6 @@ export class {{this.class_name}} {
   public readonly cloudWatchLogGroup: logs.LogGroup;
 
   {{ keep_begin(this.class_name ~ ".OtherConstructsInit", VERSION_SIGNATURE) }}
-  /* user-code */
   {{ keep_end() }}
 
   constructor(
@@ -28,19 +27,16 @@ export class {{this.class_name}} {
       retention: logs.RetentionDays.THREE_MONTHS,
 
       {{ keep_begin(this.class_name ~ ".CWProps", VERSION_SIGNATURE) }}
-      /* user-code */
       {{ keep_end() }}
     });
 
     {{ keep_begin(this.class_name ~ ".OtherConstructs", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
 
     // Tag resources
     cdk.Tags.of(this.cloudWatchLogGroup).add("Name", "{{this.name_prefix}}.log-group");
 
     {{ keep_begin(this.class_name ~ ".ExtraTags", VERSION_SIGNATURE) }}
-    /* user-code */
     {{ keep_end() }}
   }
 }

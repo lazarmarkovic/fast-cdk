@@ -28,8 +28,8 @@ print("End parsing definitions\n\n")
 #####
 print("\n--- Parsing instances ---")
 instances = []
-dsl_path = files("fastcdk.dsl_examples") / "network_ex.fcdk"
-#dsl_path = files("fastcdk.dsl_examples") / "s3based_cf_ex.fcdk"
+#dsl_path = files("fastcdk.dsl_examples") / "network_ex.fcdk"
+dsl_path = files("fastcdk.dsl_examples") / "s3based_cf_ex.fcdk"
 full_resolved_path = dsl_path.resolve()
 print("Full path: " + str(full_resolved_path))
 fcdk_text = full_resolved_path.read_text()
@@ -46,7 +46,7 @@ for i in instances:
   gsp = GraphSemanticProcessor(definitions, i.semantic_data.stack_instance, i.semantic_data.other_instances)
   gsp.add_definitions()
   gsp.add_instances()
-  gsp.visualize()
+  # gsp.visualize()
 
   transformer = Transformer(gsp.graph)
   nodes, stack_node, exe_env = transformer.transform_nodes()
