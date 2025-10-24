@@ -13,48 +13,72 @@ class CDKProjectGenerator:
     self.base_gen_path = base_gen_path
 
 
+  def _ensure_inside(self, root: Path, path: Path) -> None:
+    """Raise if `path` is not inside `root` (after resolving)."""
+    if not path.is_relative_to(root):
+      raise ValueError(f"refusing to write outside dest_root: {path}")
+
+
   def write_text_at_path(self, content: str, file_path: Union[str, Path], dest_root: Union[str, Path]) -> Path:
     """
-    Create directories inside dest_root following file_path, then write `content` to that file.
-    `file_path` must be a *relative* path like 'bin/main.ts' or 'bin/auth/main.ts'.
-    Returns the absolute destination path.
+    Create dirs under `dest_root` following a *relative* `file_path`,
+    then atomically write UTF-8 text with LF newlines. Returns absolute path.
     """
-    dest_root = Path(dest_root).expanduser().resolve()
-    rel_path = Path(file_path)
+    root = Path(dest_root).expanduser().resolve()
+    rel = Path(file_path)
 
-    if rel_path.is_absolute():
-        raise ValueError(f"file_path must be relative, got: {rel_path}")
+    if rel.is_absolute():
+      raise ValueError(f"file_path must be relative, got: {rel}")
 
-    dest_path = (dest_root / rel_path).resolve()
+    dest = (root / rel).resolve()
+    self._ensure_inside(root, dest)
 
-    # prevent '..' escape outside dest_root
-    if not str(dest_path).startswith(str(dest_root) + str(os.sep)):
-        raise ValueError(f"refusing to write outside dest_root: {dest_path}")
+    # create directories as needed, preserve existing structure
+    dest.parent.mkdir(parents=True, exist_ok=True)
 
-    dest_path.parent.mkdir(parents=True, exist_ok=True)
-    dest_path.write_text(content, encoding="utf-8", newline="\n")
-    return dest_path
+    # atomic write: write to temp then replace
+    tmp = dest.with_suffix(dest.suffix + ".tmp~")
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+      f.write(content)
+      f.flush()
+      os.fsync(f.fileno())
+    os.replace(tmp, dest)
+
+    return dest
 
 
-  def copy_resource_preserve_structure(self, resource, dest_root):
-    dest_root = Path(dest_root).expanduser()
-    # build the sub‑path under “stack_template”
-    parts = []
-    node = resource.parent
-    while node.name != "stack_template":
-      parts.insert(0, node.name)
-      node = node.parent
-    rel_path = Path(*parts) / resource.name  # e.g. bin/main.ts or bin/auth/main.ts
+  def copy_resource_preserve_structure(self,resource, dest_root: Union[str, Path], anchor_name: str = "stack_template") -> Path:
+        """
+        Copy `resource` to `dest_root` preserving its subpath under `anchor_name`.
+        - Never deletes folders; only creates missing ones.
+        - Overwrites the destination file if it exists.
+        Returns the absolute destination path.
+        """
+        root = Path(dest_root).expanduser().resolve()
 
-    # ensure destination directory exists
-    dest_path = dest_root / rel_path
-    dest_path.parent.mkdir(parents=True, exist_ok=True)
+        # build the relative path under the anchor (e.g., 'bin/main.ts' or 'bin/auth/main.ts')
+        parts = []
+        node = resource.parent
+        while True:
+          if node is None:
+            raise ValueError(f"anchor '{anchor_name}' not found in resource path")
+          if getattr(node, "name", None) == anchor_name:
+            break
+          parts.insert(0, node.name)
+          node = node.parent
 
-    # copy the actual file
-    with as_file(resource) as real_path:
-      shutil.copy(real_path, dest_path)
+        rel_path = Path(*parts) / resource.name
+        dest = (root / rel_path).resolve()
+        self._ensure_inside(root, dest)
 
-    return dest_path
+        # ensure destination directory exists; never remove existing dirs
+        dest.parent.mkdir(parents=True, exist_ok=True)
+
+        # copy file (overwrite only the file; keep dirs)
+        with as_file(resource) as src_path:
+          shutil.copy2(src_path, dest)  # preserves mtime where possible
+
+        return dest
   
 
   def render_with_keeps(self, content: str, file_path: Union[str, Path], dest_root: Union[str, Path]) -> Path:

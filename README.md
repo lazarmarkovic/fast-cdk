@@ -40,3 +40,45 @@ fastcdk ./fcdk_examples/the_one_with_big_prontend.fcdk \
         --out ./my-cdk-proj \
         --make-graph
 ```
+
+#### Code merge of generated code with custom code is solved by using predefined protected regions in template files, those parts are marked by start and end comment:
+```
+// fastcdk:keep-start id=S3cfFrontend.ExtraPolicy sig=v0.0.1>
+// fastcdk:keep-end
+```
+
+```id``` identifies protected region when rendered file is parsed to extract code from protected region
+```sig``` represents protected region version defined in j2 tempalte, 
+
+If the sig version in tempalte and in generated tempalte are the same, code in protected regions will always be kept intact after each new generation.
+But if developer bumps version (v0.0.1 -> v0.0.2) in template and then user regenerated following code:
+```
+    // fastcdk:keep-start id=Network.ExtraTags sig=v0.0.1
+    console.log("something else ")
+    
+    console.log("something else 2")
+    // fastcdk:keep-end
+```
+he will get:
+```
+
+    // fastcdk:keep-start id=Network.ExtraTags sig=v0.0.2
+/* >>> fastcdk:CONFLICT (signature changed)
+old user code:
+--------------------------------
+
+    console.log("something else ")
+    
+    console.log("something else 2")
+--------------------------------
+update this region to the new template context (version bumped)
+*/
+    // fastcdk:keep-end
+```
+This will indicate that code in protected region might need to be refactored becuase template code above has been updated (marked by bumping of region's version in tempalte). User can delete conflict markers and keep the code or change it, the code will stay the same after each generation.
+
+
+### TODO:
+- more syntactic checks for attributes
+- make better error handling to show line numbers where ever possible
+- make more default definitions to cover 10 most used AWS constructs
