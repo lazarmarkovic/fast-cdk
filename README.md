@@ -1,24 +1,24 @@
 # Fast CDK
 
-## What do we want to cover 100% ?
+Install: pip install -e .
 
-- S3
-- Lambda
-- CloudFront
-- VPC
-- ECS + AutoScaling
-- EC2
-- RDS - Aurora
-- SNS
-- IAM
-- CloudWatch
-- SQS
-- DymanoDB
+Help:
+fastcdk --help
+
+Generate to specific folder with default defs:
+fastcdk ./fcdk_examples/all_ex.fcdk \
+        --out ./generated
 
 
-- ECR
-- Pipeline + role for 3rd party ci/cd
+Generate to specific folder with custom extended defs:
+fastcdk ./fcdk_examples/the_one_with_extended_defs.fcdk \
+        --defs-dir ./fcdk_def_examples
+        --out ./generated
 
-ML OPS (!!!!!!!!!!)
-- SageMaker
-- Bedrock
+fastcdk ./fcdk_examples/the_one_with_extended_defs.fcdk \
+        --defs-dir ./fcdk_def_examples/secret_from_resource \
+        --out ./generated
+
+fastcdk ./fcdk_examples/the_one_with_extended_defs.fcdk \
+        --defs-dir ./fcdk_def_examples \
+        --out ./generated

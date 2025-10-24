@@ -75,6 +75,9 @@ class GraphSemanticProcessor:
               dep_edge_aliases=node_to_copy.dep_edge_aliases
             )
             self.graph.add_node(new_node)
+          elif not self.graph.node_exists(dep.def_name):
+            NodeNotFoundError(dep.def_name)
+
 
     # Now add assigned nodes and edges
     for node_name in self.graph.get_nodes():
@@ -84,6 +87,7 @@ class GraphSemanticProcessor:
         for dep_key in node.definition.deps.table:
           dep = node.definition.deps.table[dep_key]
           print("  - Dep: " + dep.assigned_name + " -> " + dep.def_name)
+         
           if dep.assigned_name == dep.def_name:
             to_node = self.graph.get_node(dep.def_name)
             if to_node is not None:
@@ -94,7 +98,9 @@ class GraphSemanticProcessor:
           elif self.graph.node_exists(dep.assigned_name):
             to_node = self.graph.get_node(dep.assigned_name)
             self.graph.add_edge(node, to_node)
-          
+
+          elif not self.graph.node_exists(dep.def_name):
+            raise NodeNotFoundError(dep.def_name)
           else:
             pass
             # Not needed, it is handled above

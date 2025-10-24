@@ -1,0 +1,45 @@
+load_balancer {
+
+  templates {
+    this {
+      template_file = load_balancer.j2
+      gen_path = .
+      gen_file_name = load_balancer.ts
+
+      var_name = alb
+      class_name = AppLoadBalancer
+      id_prefix = Root
+      name_prefix = root
+    }
+  }
+
+  deps {
+    alb_network = network_with_nat2 {
+      var_name = alb_net
+    }
+  }
+
+  env_vars {
+    alb_cert_arn = BuildParams.SimpleECSBackend.AlbCertificateARN = ALB::CERT::ARN
+    host_port = envConfig.BuildParams.SimpleECSBackend.HostPort = 3030
+    health_check_api_path = BuildParams.SimpleECSBackend.AlbHealthCheckApiPath = /api/healthCheck
+  }
+
+  default_inputs {    
+    internet_facing = true
+    use_public_net = true
+    idle_timeout = 4000
+
+    use_sticky_session = true
+    stickiness_cookie_duration_in_days = 7
+    stickiness_cookie_name = StickySocketSession
+
+    health_check_interval_in_sec = 5
+    health_check_timeout_in_sec = 3
+    healthy_threshold_count = 2
+    unhealthy_threshold_count = 2
+    healthy_http_code = 200
+
+    deregistration_delay_in_sec = 1
+  }
+}

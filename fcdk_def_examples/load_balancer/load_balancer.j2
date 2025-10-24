@@ -1,0 +1,143 @@
+{%- macro keep_begin(id, sig) -%}// fastcdk:keep-start id={{ id }} sig={{ sig }}{%- endmacro -%}
+{%- macro keep_end() -%}// fastcdk:keep-end{%- endmacro -%}
+
+{% set VERSION_SIGNATURE = 'v0.0.1' %}
+
+
+{%- if render_class_def -%}
+//External imports
+import * as cdk from "aws-cdk-lib";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
+import * as alb from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import * as cert from "aws-cdk-lib/aws-certificatemanager";
+
+// Config imports
+import { EnvConfig } from "@fastcdk-root/config/configSchema";
+
+// Root imports
+import { {{ alb_network.class_name }} } from "@fastcdk-lib/{{ alb_network.import_path }}";
+
+{{ keep_begin(this.class_name ~ ".OtherImports", VERSION_SIGNATURE) }}
+{{ keep_end() }}
+
+
+export class {{this.class_name}} {
+  public readonly alb: alb.ApplicationLoadBalancer;
+  public readonly albSg: ec2.SecurityGroup;
+  public readonly albTg: alb.ApplicationTargetGroup;
+  public readonly albListener: alb.ApplicationListener;
+  public readonly albListenerHttps: alb.ApplicationListener;
+  public readonly albCertificate: cert.ICertificate;
+
+  constructor(
+    mainStack: cdk.Stack,
+    envConfig: EnvConfig,
+    
+    {{alb_network.var_name}}: {{alb_network.class_name}},
+
+    {{ keep_begin(this.class_name ~ ".OtherConstructorVars", VERSION_SIGNATURE) }}
+    {{ keep_end() }}
+  ) {
+
+    this.albCertificate = cert.Certificate.fromCertificateArn(
+      mainStack,
+      "${{ this.id_prefix }}AlbCertificate",
+      envConfig.{{ this.alb_cert_arn }}
+    );
+
+    this.albSg = new ec2.SecurityGroup(mainStack, "{{ this.id_prefix }}AlbSg", {
+      vpc: {{alb_network.var_name}}.vpc,
+      allowAllOutbound: true,
+      securityGroupName: "{{ this.name_prefix }}.alb.sg",
+    });
+    this.albSg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(443));
+    this.albSg.addIngressRule(ec2.Peer.anyIpv4(), ec2.Port.tcp(80));
+    {{ keep_begin(this.class_name ~ ".ALBSgCustomPorts", VERSION_SIGNATURE) }}
+    {{ keep_end() }}
+
+    this.alb = new alb.ApplicationLoadBalancer(mainStack, "{{this.id_prefix}}Alb", {
+      loadBalancerName: "{{ this.name_prefix }}-alb",
+      internetFacing: {{this.internet_facing}},
+      vpc: {{alb_network.var_name}}.vpc,
+      {%- if this.use_public_net -%}
+      vpcSubnets: {{alb_network.var_name}}.vpc.selectSubnets({ subnetType: ec2.SubnetType.PUBLIC }),
+      {%- else -%}
+      vpcSubnets: {{alb_network.var_name}}.vpc.selectSubnets({ subnetType: ec2.SubnetType.PRIVATE }),
+      {%- endif -%}
+      securityGroup: this.albSg,
+      idleTimeout: cdk.Duration.seconds({{this.idle_timeout}}),
+      {{ keep_begin(this.class_name ~ ".ALBProps", VERSION_SIGNATURE) }}
+      {{ keep_end() }}
+    });
+
+    this.albTg = new alb.ApplicationTargetGroup(mainStack, "{{this.id_prefix}}AlbTg", {
+      {%- if this.use_sticky_session -%}
+      stickinessCookieDuration: cdk.Duration.days({{this.stickiness_cookie_duration_in_days}}),
+      stickinessCookieName: "{{this.stickiness_cookie_name}}",
+      {%- endif -%}
+      
+      targetGroupName: "{{this.name_prefix}}-alb-tg",
+      vpc: {{alb_network.var_name}}.vpc,
+      port: envConfig.{{ this.host_port }},
+      protocol: alb.ApplicationProtocol.HTTP,
+      targetType: alb.TargetType.IP,
+
+      {{ keep_begin(this.class_name ~ ".ALBTGProps", VERSION_SIGNATURE) }}
+      {{ keep_end() }}
+
+      healthCheck: {
+        interval: cdk.Duration.seconds({{this.health_check_interval_in_sec}}),
+        timeout: cdk.Duration.seconds({{this.health_check_timeout_in_sec}}),
+        path: envConfig.{{ this.health_check_api_path }},
+        port: envConfig.{{ this.host_port }}.toString(),
+        protocol: alb.Protocol.HTTP,
+        healthyThresholdCount: {{this.healthy_threshold_count}},
+        unhealthyThresholdCount: {{this.unhealthy_threshold_count}},
+        healthyHttpCodes: "{{this.healthy_http_code}}"
+      {{ keep_begin(this.class_name ~ ".ALBTGHealthCheckProps", VERSION_SIGNATURE) }}
+      {{ keep_end() }}
+      },
+      deregistrationDelay: cdk.Duration.seconds({{this.deregistration_delay_in_sec}}) // Important for change and scaling and stuff (should be 300)
+    });
+
+
+    this.albListenerHttps = new alb.ApplicationListener(mainStack, "{{this.id_prefix}}AlbListenerHttps", {
+      loadBalancer: this.alb,
+      certificates: [this.albCertificate],
+      sslPolicy: alb.SslPolicy.TLS12,
+      port: 443,
+      protocol: alb.ApplicationProtocol.HTTPS,
+      {{ keep_begin(this.class_name ~ ".ALBListenerHttpsProps", VERSION_SIGNATURE) }}
+      {{ keep_end() }}
+    });
+    this.albListenerHttps.addAction("DefaultAction", {
+      action: alb.ListenerAction.forward([this.albTg]),
+    });
+    {{ keep_begin(this.class_name ~ ".ALBListenerHttpsCustomActions", VERSION_SIGNATURE) }}
+    {{ keep_end() }}
+
+
+    {{ keep_begin(this.class_name ~ ".CustomConstructs", VERSION_SIGNATURE) }}
+    {{ keep_end() }}
+
+
+    // Tag resources
+    cdk.Tags.of(this.albSg).add("Name", "{{this.name_prefix}}.alb.sg");
+    cdk.Tags.of(this.alb).add("Name", "${{this.name_prefix}}.alb");
+    cdk.Tags.of(this.albTg).add("Name", "${{this.name_prefix}}.alb.target-group");
+    cdk.Tags.of(this.albListenerHttps).add("Name", "{{this.name_prefix}}.alb.https-listener");
+
+    {{ keep_begin(this.class_name ~ ".ExtraTags", VERSION_SIGNATURE) }}
+    {{ keep_end() }}
+  }
+}
+{%- else -%}
+new {{this.class_name}}(
+  this, 
+  envConfig,
+  this.{{ alb_network.var_name }},
+  
+  {{ keep_begin(this.class_name ~ ".OtherExternalConstructorVars", VERSION_SIGNATURE) }}
+  {{ keep_end() }}
+);
+{%- endif -%}

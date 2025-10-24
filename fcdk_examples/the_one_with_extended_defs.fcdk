@@ -1,0 +1,12 @@
+# Test Extended Defs
+
+extended_defs_stack = stack {
+  exe_env = _ = staging12345
+  
+  secret
+  alb
+}
+
+secret = secret_from_resource {}
+
+alb = load_balancer {}
