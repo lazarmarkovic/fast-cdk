@@ -1,6 +1,6 @@
-# Test Network Template stuff
+# CDK Networks Test
 
-climbing_app = stack {
+networks_stack = stack {
   exe_env = _ = staging123
 
   network_1

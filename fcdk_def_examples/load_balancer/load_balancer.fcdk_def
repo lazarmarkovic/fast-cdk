@@ -14,7 +14,7 @@ load_balancer {
   }
 
   deps {
-    alb_network = network_with_nat2 {
+    alb_network = network_with_nat {
       var_name = alb_net
     }
   }

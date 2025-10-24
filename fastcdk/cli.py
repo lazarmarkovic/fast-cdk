@@ -17,12 +17,14 @@ def build(
     help="Folders with custom .fcdk_def and .j2 files (repeatable)"
   ),
   out: Path = typer.Option(Path("./generated"), "--out", help="Output folder for generated code"),
+  make_graph: bool = typer.Option(False, "--make-graph", help="Makes dependancy graph if flag is present"),
   dry_run: bool = typer.Option(False, "--dry-run", help="Only show parsed arguments as JSON"),
 ):
   payload: Dict[str, Any] = {
     "instances": [str(p.resolve()) for p in instances],
     "defs_dir": [str(p.resolve()) for p in defs_dir],
     "out": str(out.resolve()),
+    "make_graph": str(make_graph)
   }
 
   if dry_run:
@@ -31,7 +33,7 @@ def build(
 
   try:
     from fastcdk import runner
-    runner.run(instance_files=instances, custom_defs_dirs=defs_dir, out_dir=out)  
+    runner.run(instance_files=instances, custom_defs_dirs=defs_dir, out_dir=out, make_graph=make_graph)  
   except ImportError:
     console.print("Error while running DSL with those args: ")
     console.print_json(data=payload)

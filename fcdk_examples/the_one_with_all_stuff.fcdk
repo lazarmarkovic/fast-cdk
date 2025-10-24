@@ -1,6 +1,6 @@
-# Test All
+# All Stuff Test
 
-climbing_app = stack {
+all_stuff_test = stack {
   exe_env = _ = staging12345
   
 

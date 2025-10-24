@@ -1,4 +1,4 @@
-# Test Extended Defs
+# Extended Definitions Test
 
 extended_defs_stack = stack {
   exe_env = _ = staging12345

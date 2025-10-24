@@ -1,6 +1,6 @@
-# Test Inheritance
+# Much Inheritance Test
 
-climbing_app = stack {
+much_inh_stack = stack {
   exe_env = _ = staging123
 
   network_3

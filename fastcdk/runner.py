@@ -10,7 +10,7 @@ from fastcdk.util.files import get_definitions_from_package, get_definitions_fro
 
 
 
-def run(instance_files=None, custom_defs_dirs=None, out_dir=None):
+def run(instance_files=None, custom_defs_dirs=None, out_dir=None, make_graph=False):
   metamodel = MetaModel().mm
   semantic_processor = SemanticProcessors()
   metamodel.register_obj_processors(semantic_processor.obj_processors)
@@ -67,7 +67,9 @@ def run(instance_files=None, custom_defs_dirs=None, out_dir=None):
     gsp = GraphSemanticProcessor(definitions, i.semantic_data.stack_instance, i.semantic_data.other_instances)
     gsp.add_definitions()
     gsp.add_instances()
-    gsp.visualize()
+
+    if make_graph:
+      gsp.visualize()
 
     transformer = Transformer(gsp.graph)
     nodes, stack_node, exe_env = transformer.transform_nodes()

@@ -1,6 +1,6 @@
-# Test Network Template stuff
+# Big Frontend Test
 
-climbing_app = stack {
+git_frontend_stack = stack {
   s3_cf
 
   network_1
