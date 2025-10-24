@@ -1,17 +1,18 @@
 from importlib.resources import files
+from pathlib import Path
 
 from fastcdk.dsl.cdk_project_gen import CDKProjectGenerator
 from fastcdk.dsl.graph_semantic_processor import GraphSemanticProcessor
 from fastcdk.dsl.metamodel import MetaModel
 from fastcdk.dsl.semantic_processors import SemanticProcessors
 from fastcdk.dsl.transformer import Transformer
-from fastcdk.util.files import get_definitions_from_path
+from fastcdk.util.files import get_definitions_from_package
 
 metamodel = MetaModel().mm
 semantic_processor = SemanticProcessors()
 metamodel.register_obj_processors(semantic_processor.obj_processors)
 
-def_packages = get_definitions_from_path("fastcdk.stack_template.lib")
+def_packages = get_definitions_from_package("fastcdk.stack_template.lib")
 
 print("####### START: Parsing Definitions")
 definitions = []
@@ -55,8 +56,8 @@ for i in instances:
   tree = transformer.transform_env_vars(nodes)
   print(f"####### START: Add Instance {i.semantic_data.stack_instance.stack_name}\n\n")
 
-
-cdkProjectGenerator = CDKProjectGenerator()
-cdkProjectGenerator.generate(nodes, stack_node)
-cdkProjectGenerator.generate_config_stuff(tree, exe_env)
+testing_ground_path = Path("~/code/fast_cdk/testing_ground")
+gen = CDKProjectGenerator(testing_ground_path)
+gen.generate(nodes, stack_node)
+gen.generate_config_stuff(tree, exe_env)
 

@@ -2,6 +2,7 @@
 /fast_cdk_venv
 /lib
 graph_viz.html
+/generated
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

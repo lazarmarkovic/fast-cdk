@@ -9,8 +9,9 @@ from fastcdk.dsl.project_file_list import cdk_project_files
 
 
 class CDKProjectGenerator:
-  def __init__(self):
-    pass
+  def __init__(self, base_gen_path):
+    self.base_gen_path = base_gen_path
+
 
   def write_text_at_path(self, content: str, file_path: Union[str, Path], dest_root: Union[str, Path]) -> Path:
     """
@@ -78,9 +79,7 @@ class CDKProjectGenerator:
     # Generate basic proejct files
     for resource in cdk_project_files:
       #print(resource)
-
-      testing_ground_path = Path("~/code/fast_cdk/testing_ground")
-      self.copy_resource_preserve_structure(resource, testing_ground_path)
+      self.copy_resource_preserve_structure(resource, self.base_gen_path)
 
     # generate env config and loading system
 
@@ -88,13 +87,13 @@ class CDKProjectGenerator:
     # Generate TS constructs code files
     for cn in construct_nodes:
       for t_key, t_val in cn.definition.templates.table.items():
-        self.render_with_keeps(cn.rendered_classes[t_key], Path("lib", t_val.gen_path) / t_val.gen_file_name, testing_ground_path)
+        self.render_with_keeps(cn.rendered_classes[t_key], Path("lib", t_val.gen_path) / t_val.gen_file_name, self.base_gen_path)
 
 
     # Generate stack TS code
     stack_node_rendered_class = stack_node.rendered_classes["this"]
     stack_node_tempalte = stack_node.definition.templates.table["this"]
-    self.render_with_keeps(stack_node_rendered_class, Path("lib", stack_node_tempalte.gen_path) / stack_node_tempalte.gen_file_name, testing_ground_path)
+    self.render_with_keeps(stack_node_rendered_class, Path("lib", stack_node_tempalte.gen_path) / stack_node_tempalte.gen_file_name, self.base_gen_path)
     
 
   def generate_config_stuff(self, tree, exe_env):
@@ -108,7 +107,6 @@ class CDKProjectGenerator:
       "iface_name": "EnvConfig",
     }
 
-    testing_ground_path = Path("~/code/fast_cdk/testing_ground")
     resource = files("fastcdk.stack_template.config") / "configSchema.j2"
     resource2 = files("fastcdk.stack_template.env-config") / "env.j2"
 
@@ -116,7 +114,7 @@ class CDKProjectGenerator:
       env = Environment(loader=FileSystemLoader(str(tpl_path.parent)))
       tpl = env.get_template(tpl_path.name)
       out = tpl.render(ctx)
-      self.render_with_keeps(out, Path("config") / "configSchema.ts", testing_ground_path)
+      self.render_with_keeps(out, Path("config") / "configSchema.ts", self.base_gen_path)
       #print(out)
 
     # this yields a real filesystem path even if the package is zipped
@@ -124,5 +122,5 @@ class CDKProjectGenerator:
       env = Environment(loader=FileSystemLoader(str(tpl_path2.parent)))
       tpl = env.get_template(tpl_path2.name)
       out = tpl.render(ctx)
-      self.render_with_keeps(out, Path("env-config") / f"{exe_env}.toml", testing_ground_path)
+      self.render_with_keeps(out, Path("env-config") / f"{exe_env}.toml", self.base_gen_path)
       #print(out)
