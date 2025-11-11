@@ -140,18 +140,31 @@ class SemanticProcessors:
 
 
   def single_dependency(self, entity):
-    if (entity.assigned_name == entity.def_name):
-      raise TextXSemanticError(f"Dep entry assigned_name '{entity.assigned_name}' cannot be the same as definition name.", **get_location(entity))
+    if hasattr(entity, "definition") and entity.definition is not None:
+      assigned_name = entity.name
+      def_name = entity.definition.name
+
+      if (assigned_name == def_name):
+        raise TextXSemanticError(f"Dep entry assigned_name '{assigned_name}' cannot be the same as definition name.", **get_location(entity))
+    else:
+       def_name = entity.assigned_name
+
     inputs_dict = {}
     for i in entity.inputs:
       single_input = i.semantic_data
-      if (single_input.key in inputs_dict):
-        raise TextXSemanticError(f"Duplicate input variable '{".".join(single_input.key)}' in dep_entry section.", **get_location(i))
+      if single_input.key in inputs_dict:
+        key_str = (
+          ".".join(single_input.key)
+          if isinstance(single_input.key, tuple)
+          else str(single_input.key)
+        )
+        raise TextXSemanticError(f"Duplicate input variable '{key_str}' in dep_entry section.", **get_location(i))
       inputs_dict[single_input.key] = single_input
+  
     entity.semantic_data = SingleDependency(
-      assigned_name=entity.assigned_name,
-      def_name=entity.def_name if entity.def_name != '' else entity.assigned_name,
-      inputs=inputs_dict
+      assigned_name=assigned_name,
+      def_name=def_name,
+      inputs=inputs_dict,
     )
 
 
@@ -209,21 +222,28 @@ class SemanticProcessors:
   #########################
   ##### Instance processors
   def single_other_instance(self, entity):
-    if (entity.assigned_name == entity.target_name):
-      raise TextXSemanticError(f"Dep entry assigned_name '{entity.assigned_name}' cannot be the same as definition name.", **get_location(entity))
+    assigned_name = entity.assigned_name
+    def_name = entity.definition.name
+    if (assigned_name == def_name):
+      raise TextXSemanticError(f"Dep entry assigned_name '{assigned_name}' cannot be the same as definition name.", **get_location(entity))
 
     inputs_dict = {}
     for i in entity.inputs:
       single_input = i.semantic_data
       if (single_input.key in inputs_dict):
-        raise TextXSemanticError(f"Duplicate input variable '{".".join(single_input.key)}' in dep_entry section.", **get_location(i))
+        key_str = (
+          ".".join(single_input.key)
+          if isinstance(single_input.key, tuple)
+          else str(single_input.key)
+        )
+        raise TextXSemanticError(f"Duplicate input variable '{key_str}' in dep_entry section.", **get_location(i))
       inputs_dict[single_input.key] = single_input
   
     entity.semantic_data = SingleOtherInstance(
-      assigned_name=entity.assigned_name,
-      target_name=entity.target_name if entity.target_name != '' else entity.assigned_name,
+      assigned_name=assigned_name,
+      target_name=entity.definition.name,
       inputs=inputs_dict,
-      dep_overrides=tuple([depo.name for depo in entity.dep_overrides])
+      dep_overrides=tuple(depo.name for depo in entity.dep_overrides)
     )
 
 
