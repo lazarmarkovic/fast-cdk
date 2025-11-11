@@ -35,7 +35,7 @@ SingleTemplate:
     class_name=ClassNameAssign
     id_prefix=IdPrefixAssign
     name_prefix=NamePrefixAssign
-  "}"  
+  "}"
 ;
 TemplateFileAssign: "template_file" "=" val=FileName ;
 GenPathAssign: "gen_path" "=" val=PATH ;
@@ -54,8 +54,9 @@ DependencyMapSection:
   "}"
 ;
 SingleDependency:
-    assigned_name=ID "=" def_name=ID ( "{" inputs+=SingleGeneralInputAssign "}" )?
-  | assigned_name=ID
+    name=ID "=" definition=[SingleDefinition:ID|+m:fcdk.definitions]
+            ( "{" inputs+=SingleGeneralInputAssign "}" )?
+  | name=ID
 ;
 SingleGeneralInputAssign: 
     key=ID "=" "_" "=" ref_val=PATH
@@ -114,17 +115,18 @@ SingleInstance:
 ;
 
 SingleStackInstance:
-  stack_name=ID "=" "stack"
+  name=ID "=" "stack"
   "{"
       inputs*=SingleGeneralInputAssign
       children*=Child
   "}"
 ;
-Child: name=ID ;
-
+Child: 
+  instance=[SingleOtherInstance:ID|parent(SingleInstance).other_instances]
+;
 
 SingleOtherInstance:
-  assigned_name=ID "=" target_name=ID
+  name=ID "=" definition=[SingleDefinition:ID|+m:fcdk.definitions]
   "{"
     inputs*=SingleGeneralInputAssign
     dep_overrides*=DepOverride
