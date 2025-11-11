@@ -138,7 +138,7 @@ class SingleStackInstance(ApplicableToDef):
 @dataclass
 class SingleInstance:
   stack_instance: SingleStackInstance
-  other_instances: SingleOtherInstance
+  other_instances: OtherInstanceMap
 
 
 ####################
