@@ -30,7 +30,7 @@ def build(
   out: Path = typer.Option(Path("./generated"), "--out", help="Output folder for generated code"),
   make_graph: bool = typer.Option(False, "--make-graph", help="Makes dependancy graph if flag is present"),
   dry_run: bool = typer.Option(False, "--dry-run", help="Only show parsed arguments as JSON"),
-  debug: bool = typer.Option(False, "--debug", help="Enable Typer debug mode"),
+  debug: bool = typer.Option(False, "--debug", help="Enable exception traces"),
 ):
   payload: Dict[str, Any] = {
     "instances": [str(p.resolve()) for p in instances],
