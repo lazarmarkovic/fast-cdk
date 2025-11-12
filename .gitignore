@@ -5,6 +5,7 @@ graph_viz.html
 /generated
 node_modules
 package-lock.json
+*.vsix
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

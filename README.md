@@ -1,4 +1,8 @@
-# Fast CDK
+# Fast CDK Domain Specific Language
+
+<p align="center">
+  <img src="images/icon.png" alt="FastCDK logo" width="160" />
+</p>
 
 ### FastCDK is extensible Domain Specific Language for generating Typescript-based AWS infrastructure-as-code projects using AWS CDK library system.
 
@@ -16,6 +20,18 @@
     - their dependancies overridden
 Compilation consists of graph traversal to find subgraph of dependant definitions which is then transformed into a list of contexts which are used with Jinja2 to generate Typescript files in form of consistent AWS CDK Project.
 
+### CLI Arguments & Flags
+
+| Name               | Type                     | Description                                                         |
+|--------------------|---------------------------|---------------------------------------------------------------------|
+| `INSTANCE_FILES...` | argument (repeatable)     | One or more `.fcdk` instance files to compile.                      |
+| `--defs-dir DIR`   | option (repeatable)       | Directory containing custom `.fcdk_def` and `.j2` definition files. |
+| `--out PATH`       | option                    | Output folder for the generated CDK project. Default: `./generated`.|
+| `--make-graph`     | flag                      | Generates an HTML dependency graph (`graph_viz.html`).              |
+| `--dry-run`        | flag                      | Prints parsed arguments as JSON and exits without generating code.  |
+| `--debug`          | flag                      | Enable exception traces                                             |
+
+
 ### Steps to test:
 - Install: ```pip install -e .```
 - Show Flag Help: ```fastcdk --help```
@@ -24,7 +40,7 @@ Compilation consists of graph traversal to find subgraph of dependant definition
 fastcdk ./fcdk_examples/the_one_with_all_stuff.fcdk 
 fastcdk ./fcdk_examples/the_one_with_much_inheritance.fcdk
 fastcdk ./fcdk_examples/the_one_with_networks.fcdk
-fastcdk ./fcdk_examples/the_one_with_big_prontend.fcdk
+fastcdk ./fcdk_examples/the_one_with_big_frontend.fcdk
 ```
 
 - Generate to specific folder ```(--out ./my-cdk-proj)``` with custom/extended defs ```(stored in 'fcdk_def_examples')```:
@@ -36,7 +52,7 @@ fastcdk ./fcdk_examples/the_one_with_extended_defs.fcdk \
 
 - Generate definition dependancy graph ```(with flag --make-graph)``` with instance stack as root ```(generated as HTML file ./graph_viz.html)```:
 ```
-fastcdk ./fcdk_examples/the_one_with_big_prontend.fcdk \
+fastcdk ./fcdk_examples/the_one_with_big_frontend.fcdk \
         --out ./my-cdk-proj \
         --make-graph
 ```
@@ -82,3 +98,7 @@ This will indicate that code in protected region might need to be refactored bec
 - more syntactic checks for attributes
 - make better error handling to show line numbers where ever possible
 - make more default definitions to cover 10 most used AWS constructs
+
+## License
+
+MIT License © 2025 Lazar M. Marković
