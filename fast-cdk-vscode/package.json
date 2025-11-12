@@ -3,7 +3,8 @@
   "displayName": "FastCDK DSL Support",
   "description": "Syntax highlighting, IntelliSense, and language server for the fastCDK DSL (textX).",
   "version": "0.1.0",
-  "publisher": "lazar-markovic",
+  "publisher": "lazarmarkovic",
+  "readme": "README.md",
   "engines": { "vscode": "^1.92.0" },
   "categories": ["Programming Languages"],
   "icon": "images/icon.png",
@@ -12,6 +13,10 @@
     "onCommand:fastcdk.restartServer"
   ],
   "main": "./dist/src/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lazarmarkovic/fast-cdk.git"
+  },
   "contributes": {
     "languages": [
       {
