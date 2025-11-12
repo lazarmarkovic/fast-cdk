@@ -5,7 +5,7 @@ from typing import List, Dict, Any
 import typer
 from rich.console import Console
 from rich.theme import Theme
-from textx import TextXSyntaxError
+from textx import TextXError
 
 from fastcdk.fastcdk_error import FcdkError
 
@@ -15,7 +15,7 @@ app = typer.Typer(
   help="fastcdk — args-only CLI that reads input and hands it to your pipeline.",
 )
 
-def _print_textx_error(e: TextXSyntaxError | FcdkError) -> None:
+def _print_textx_error(e: TextXError | FcdkError) -> None:
   # e.__str__ already formats as: "<file>:<line>:<col>: <msg> => '<fragment>'"
   # now that we pass file_name, it won't be "None" anymore.
   console.print(str(e), style="err")
@@ -47,7 +47,7 @@ def build(
   from fastcdk import runner
   try:
       runner.run(instance_files=instances, custom_defs_dirs=defs_dir, out_dir=out, make_graph=make_graph)
-  except TextXSyntaxError as e:
+  except TextXError as e:
       if debug:
           raise  # let you see the full stack when you want it
       _print_textx_error(e)
