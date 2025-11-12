@@ -24,8 +24,7 @@ def run(instance_files=None, custom_defs_dirs=None, out_dir=None, make_graph=Fal
   print("####### START: Parsing Definitions")
   for def_package in def_packages:
     print(f"Parsing definitions from: {def_package}")
-    fcdk_def_text = def_package.read_text()
-    model = metamodel.model_from_str(fcdk_def_text)
+    model = metamodel.model_from_file(def_package)
     for d in model.fcdk.definitions:
       d.base_path = def_package.parent
       definitions.append(d)
@@ -39,8 +38,7 @@ def run(instance_files=None, custom_defs_dirs=None, out_dir=None, make_graph=Fal
   print("####### START: Parsing Custom Definitions")
   for def_file_path in def_file_paths:
     print(f"Parsing definitions from: {def_file_path}")
-    fcdk_def_text = def_file_path.read_text()
-    model = metamodel.model_from_str(fcdk_def_text)
+    model = metamodel.model_from_file(def_file_path)
     for d in model.fcdk.definitions:
       d.base_path = def_file_path.parent
       definitions.append(d)
@@ -52,9 +50,8 @@ def run(instance_files=None, custom_defs_dirs=None, out_dir=None, make_graph=Fal
   instances = []
   print("####### START: Parsing Instances")
   for instance_file_path in instance_files:
-    print("Full path: " + str(instance_file_path))
-    fcdk_text = instance_file_path.read_text()
-    model = metamodel.model_from_str(fcdk_text)
+    print("Parsing instances from: " + str(instance_file_path))
+    model = metamodel.model_from_file(instance_file_path)
     for i in model.fcdk.instances:
       i.base_path = instance_file_path.parent
       instances.append(i)
