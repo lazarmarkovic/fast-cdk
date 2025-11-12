@@ -6,10 +6,10 @@
     { "include": "#comments" },
 
     { "include": "#sections" },
-    { "include": "#templateKeys" },
     { "include": "#blockNames" },
 
     { "include": "#lhsBeforeEquals" },
+    { "include": "#templateKeys" },
 
     { "include": "#rhsRefBeforeBrace" },
     { "include": "#rhsValueSegment" },
@@ -40,7 +40,7 @@
       "patterns": [
         {
           "name": "support.constant.template.key.fcdk",
-          "match": "\\b(template_file|gen_path|gen_file_name|var_name|class_name|id_prefix|name_prefix)\\b"
+          "match": "\\b(template_file|gen_path|gen_file_name|var_name|class_name|id_prefix|name_prefix)\\b(?=\\s*=)"
         }
       ]
     },
