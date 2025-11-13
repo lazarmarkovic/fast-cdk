@@ -11,10 +11,10 @@ Definitions:
 
 SingleDefinition:
   name=ID "{"
-    template_map=TemplateMapSection
+    (template_map=TemplateMapSection
     deps=DependencyMapSection?
     env_vars=EnvVarMapSection?
-    default_inputs=DefaultInputMapSection?
+    default_inputs=DefaultInputMapSection?)#
   "}"
 ;
 
@@ -27,14 +27,14 @@ TemplateMapSection:
 ;
 SingleTemplate: 
   template_name=ID "{"  
-    template_file=TemplateFileAssign 
+    (template_file=TemplateFileAssign 
     gen_path=GenPathAssign
     gen_file_name=GenFileNameAssign
 
     var_name=VarNameAssign
     class_name=ClassNameAssign
     id_prefix=IdPrefixAssign
-    name_prefix=NamePrefixAssign
+    name_prefix=NamePrefixAssign)#
   "}"  
 ;
 TemplateFileAssign: "template_file" "=" val=FileName ;
@@ -105,20 +105,23 @@ DefaultInputAssign:
 ////////////////////////////////
 /////////////// Instance Grammar
 Instances:
-    instances*=SingleInstance
+  instances*=Instance
 ;
 
-SingleInstance:
-  stack_instance=SingleStackInstance
-  other_instances*=SingleOtherInstance
+Instance:
+    SingleStackInstance
+  | SingleOtherInstance
 ;
 
 SingleStackInstance:
   stack_name=ID "=" "stack"
   "{"
-      inputs*=SingleGeneralInputAssign
-      children*=Child
+      body*=SSBodyEntry
   "}"
+;
+SSBodyEntry: 
+    SingleGeneralInputAssign 
+  | Child 
 ;
 Child: name=ID ;
 
@@ -126,9 +129,12 @@ Child: name=ID ;
 SingleOtherInstance:
   assigned_name=ID "=" target_name=ID
   "{"
-    inputs*=SingleGeneralInputAssign
-    dep_overrides*=DepOverride
+      body*=SOBodyEntry
   "}"
+;
+SOBodyEntry:
+    SingleGeneralInputAssign
+  | DepOverride
 ;
 DepOverride: name=ID ;
 

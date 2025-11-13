@@ -54,7 +54,7 @@ class SemanticProcessors:
       'SingleOtherInstance': self.single_other_instance,
       'SingleStackInstance': self.single_stack_instance,
 
-      'SingleInstance': self.single_instance,
+      'Instances': self.instances_section,
     }
 
     self.template_field_map = {
@@ -209,60 +209,135 @@ class SemanticProcessors:
   #########################
   ##### Instance processors
   def single_other_instance(self, entity):
-    if (entity.assigned_name == entity.target_name):
-      raise TextXSemanticError(f"Dep entry assigned_name '{entity.assigned_name}' cannot be the same as definition name.", **get_location(entity))
+    if entity.assigned_name == entity.target_name:
+      raise TextXSemanticError(
+        f"Dep entry assigned_name '{entity.assigned_name}' cannot be the same as definition name.",
+        **get_location(entity),
+      )
 
-    inputs_dict = {}
-    for i in entity.inputs:
-      single_input = i.semantic_data
-      if (single_input.key in inputs_dict):
-        raise TextXSemanticError(f"Duplicate input variable '{".".join(single_input.key)}' in dep_entry section.", **get_location(i))
-      inputs_dict[single_input.key] = single_input
-  
+    inputs_dict: dict = {}
+    dep_overrides: list[str] = []
+
+    for item in entity.body:
+      cls_name = item.__class__.__name__
+
+      if cls_name == "SingleGeneralInputAssign":
+        single_input = item.semantic_data
+        key = single_input.key
+        if key in inputs_dict:
+          # if key is a tuple like ('tmpl', 'field') we join with '.'
+          key_str = ".".join(key) if isinstance(key, tuple) else str(key)
+          raise TextXSemanticError(
+            f"Duplicate input variable '{key_str}' in instance section.",
+            **get_location(item),
+          )
+        inputs_dict[key] = single_input
+
+      elif cls_name == "DepOverride":
+        dep_overrides.append(item.name)
+
+      else:
+        raise TextXSemanticError(
+          f"Unknown element '{cls_name}' inside other-instance body.",
+          **get_location(item),
+        )
+
     entity.semantic_data = SingleOtherInstance(
       assigned_name=entity.assigned_name,
-      target_name=entity.target_name if entity.target_name != '' else entity.assigned_name,
+      target_name=entity.target_name or entity.assigned_name,
       inputs=inputs_dict,
-      dep_overrides=tuple([depo.name for depo in entity.dep_overrides])
+      dep_overrides=tuple(dep_overrides),
     )
 
 
-  def single_stack_instance(self, entity):
-    # Validate children
-    child_names = set()
-    for c in entity.children:
-      if c.name in child_names:
-        raise TextXSemanticError(f"Duplicate child instance name '{c.name}' in stack_instance section.", **get_location(c))
-      child_names.add(c.name)
 
-    inputs_dict = {}
-    for i in entity.inputs:
-      single_input = i.semantic_data
-      if (single_input.key in inputs_dict):
-        raise TextXSemanticError(f"Duplicate input variable '{".".join(single_input.key)}' in dep_entry section.", **get_location(i))
-      inputs_dict[single_input.key] = single_input
+  def single_stack_instance(self, entity):
+    child_names: set[str] = set()
+    inputs_dict: dict = {}
+
+    for item in entity.body:
+      cls_name = item.__class__.__name__
+
+      if cls_name == "SingleGeneralInputAssign":
+        single_input = item.semantic_data
+        key = single_input.key
+        if key in inputs_dict:
+          key_str = ".".join(key) if isinstance(key, tuple) else str(key)
+          raise TextXSemanticError(
+            f"Duplicate input variable '{key_str}' in stack_instance section.",
+            **get_location(item),
+          )
+        inputs_dict[key] = single_input
+
+      elif cls_name == "Child":
+        if item.name in child_names:
+          raise TextXSemanticError(
+            f"Duplicate child instance name '{item.name}' in stack_instance section.",
+            **get_location(item),
+          )
+        child_names.add(item.name)
+
+      else:
+        raise TextXSemanticError(
+          f"Unknown element '{cls_name}' inside stack body.",
+          **get_location(item),
+        )
 
     entity.semantic_data = SingleStackInstance(
       stack_name=entity.stack_name,
       inputs=inputs_dict,
-      children=tuple(child_names)
+      children=tuple(child_names),
     )
 
 
-  def single_instance(self, entity):
-    stack_instance = getattr(entity.stack_instance, "semantic_data", None) or SingleStackInstance({})
+
+
+  def instances_section(self, entity):
+    print("ENTER")
+    stack_sem: SingleStackInstance | None = None
+    other_instances_table: dict[str, SingleOtherInstance] = {}
+
+    for inst in entity.instances:
+      sem = inst.semantic_data
+
+      if isinstance(sem, SingleStackInstance):
+
+        print("FOOOOUND. " + sem.stack_name)
+        if stack_sem is not None:
+          raise TextXSemanticError(
+            "Only one stack instance is allowed per file.",
+            **get_location(inst),
+          )
+        stack_sem = sem
+
+      elif isinstance(sem, SingleOtherInstance):
+        k = sem.assigned_name
+        if k in other_instances_table:
+          raise TextXSemanticError(
+            f"Duplicate instance name '{k}' in instance section.",
+            **get_location(inst),
+          )
+        other_instances_table[k] = sem
+
+      else:
+        raise TextXSemanticError(
+          f"Unexpected semantic type '{type(sem).__name__}' in Instances.",
+          **get_location(inst),
+        )
+
+    if stack_sem is None:
+      raise TextXSemanticError(
+        "Exactly one stack instance is required in the file, but none was found.",
+        **get_location(entity),
+      )
     
-    other_instances_table = {}
-    for oi in entity.other_instances:
-      k = oi.semantic_data.assigned_name
-      if k in other_instances_table:
-        raise TextXSemanticError(f"Duplicate instance name '{k}' in instance section.", **get_location(oi))
-      other_instances_table[k] = oi.semantic_data
+    print("stack name: " + stack_sem.stack_name)
 
     entity.semantic_data = SingleInstance(
-      stack_instance=stack_instance,
-      other_instances=OtherInstanceMap(table=other_instances_table)
+      stack_instance=stack_sem,
+      other_instances=OtherInstanceMap(table=other_instances_table),
     )
+
 
 
 

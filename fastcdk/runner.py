@@ -52,16 +52,17 @@ def run(instance_files=None, custom_defs_dirs=None, out_dir=None, make_graph=Fal
   for instance_file_path in instance_files:
     print("Parsing instances from: " + str(instance_file_path))
     model = metamodel.model_from_file(instance_file_path)
-    for i in model.fcdk.instances:
-      i.base_path = instance_file_path.parent
-      instances.append(i)
-    print("####### END: Parsing Instances\n\n")
+
+    inst = model.fcdk.semantic_data 
+    inst.base_path = instance_file_path.parent
+    instances.append(inst)
+  print("####### END: Parsing Instances\n\n")
 
 
   print("Number of instances: " + str(len(instances)) + "\n\n")
   for i in instances:
-    print(f"####### START: Add Instance {i.semantic_data.stack_instance.stack_name}")
-    gsp = GraphSemanticProcessor(definitions, i.semantic_data.stack_instance, i.semantic_data.other_instances)
+    print(f"####### START: Add Instance {i.stack_instance.stack_name}")
+    gsp = GraphSemanticProcessor(definitions, i.stack_instance, i.other_instances)
     gsp.add_definitions()
     gsp.add_instances()
 
@@ -71,7 +72,7 @@ def run(instance_files=None, custom_defs_dirs=None, out_dir=None, make_graph=Fal
     transformer = Transformer(gsp.graph)
     nodes, stack_node, exe_env = transformer.transform_nodes()
     tree = transformer.transform_env_vars(nodes)
-    print(f"####### START: Add Instance {i.semantic_data.stack_instance.stack_name}\n\n")
+    print(f"####### END: Added Instance {i.stack_instance.stack_name}\n\n")
 
   testing_ground_path = out_dir
   gen = CDKProjectGenerator(testing_ground_path)

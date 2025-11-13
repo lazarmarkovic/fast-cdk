@@ -2,8 +2,8 @@ load_balancer {
 
   templates {
     this {
-      template_file = load_balancer.j2
       gen_path = .
+      template_file = load_balancer.j2
       gen_file_name = load_balancer.ts
 
       var_name = alb
