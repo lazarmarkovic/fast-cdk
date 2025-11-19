@@ -1,0 +1,5 @@
+# All auto dependancies
+
+git_frontend_stack = stack {
+  s3_based_cloudfront_full_frontend
+}

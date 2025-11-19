@@ -26,11 +26,13 @@ classifiers = [
 ]
 requires-python = ">=3.8, <3.13"
 dependencies = [
-  "textX >= 4.2.3",
-  "Jinja2 >= 3.1.5",
-  "importlib-metadata; python_version < '3.10'", # For entry_points backward compatibility
-  "typer >= 0.20.0",
-  "rich >= 14.2.0"
+  "textX >= 4.2.3, < 5.0.0",
+  "Jinja2 >= 3.1.5, < 4.0.0",
+  "importlib-metadata; python_version < '3.10'",
+  "typer >= 0.20.0, < 1.0.0",
+  "rich >= 14.2.0, < 15.0.0",
+  "networkx >= 3.5, < 4.0",
+  "pyvis >= 0.3.2, < 0.4.0"
 ]
 
 [project.entry-points.textx_languages]
