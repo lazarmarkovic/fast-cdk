@@ -94,10 +94,19 @@ update this region to the new template context (version bumped)
 This will indicate that code in protected region might need to be refactored becuase template code above has been updated (marked by bumping of region's version in tempalte). User can delete conflict markers and keep the code or change it, the code will stay the same after each generation.
 
 
-### TODO:
-- more syntactic checks for attributes
-- make better error handling to show line numbers where ever possible
-- make more default definitions to cover 10 most used AWS constructs
+
+## VS Code Extension
+Code for custom VS Code extension is lcoated in ```fast-cdk-vscode``` folder. Steps to install build and install it:
+
+- Install deps: `npm install`
+- Build: `npm run build`
+- Package (maey need to install tool `vsce`): `vsce package`
+- Install: `code --install-extension fast-cdk-vscode-0.1.0.vsix`
+
+This extension will also install it's dependancy extension [TextX](https://marketplace.visualstudio.com/items?itemName=textX.textX).
+
+After FastCDK extension is installed, install the textX project to enable Language Server support as shown on textX extension page [TextX](https://marketplace.visualstudio.com/items?itemName=textX.textX).
+
 
 ## License
 
