@@ -1,0 +1,28 @@
+{
+  "name": "tx-fastcdk",
+  "description": "textX DSL",
+  "version": "0.1.0",
+  "publisher": "textX",
+  "repository": "https://github.com/textX/textX-LS",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+    ],
+    "grammars": [
+    ]
+  },
+  "scripts": {
+    "postinstall": "node ./node_modules/vscode/bin/install"
+  },
+  "extensionDependencies": [
+    "textX.textX"
+  ]
+}

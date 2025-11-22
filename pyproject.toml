@@ -38,6 +38,7 @@ dependencies = [
 
 [project.entry-points.textx_languages]
 fastcdk = "fastcdk.language:fastcdk_language"
+fastcdk_def = "fastcdk.language:fastcdk_def_language"
 
 
 [project.scripts]
