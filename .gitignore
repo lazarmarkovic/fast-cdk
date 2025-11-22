@@ -1,11 +1,12 @@
 
-/fast_cdk_venv
+/fastcdk_venv
 /lib
 graph_viz.html
 /generated
 node_modules
 package-lock.json
 *.vsix
+/my-cdk-proj
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

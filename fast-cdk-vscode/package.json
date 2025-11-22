@@ -67,6 +67,9 @@
     "compile": "tsc -p .",
     "watch": "tsc -w -p ."
   },
+  "extensionDependencies": [
+    "textX.textX"
+  ],
   "devDependencies": {
     "@types/node": "^20.14.9",
     "@types/vscode": "^1.92.0",
