@@ -1,0 +1,135 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "fastCDK",
+  "scopeName": "source.fcdk",
+  "patterns": [
+    { "include": "#comments" },
+
+    { "include": "#sections" },
+    { "include": "#blockNames" },
+
+    { "include": "#lhsBeforeEquals" },
+    { "include": "#templateKeys" },
+
+    { "include": "#rhsRefBeforeBrace" },
+    { "include": "#rhsValueSegment" },
+
+    { "include": "#standaloneLhs" },
+
+    { "include": "#punctuation" },
+    { "include": "#numbers" },
+    { "include": "#literals" },
+    { "include": "#refsStandalone" },
+    { "include": "#identifiers" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.number-sign.fcdk", "match": "#.*$" }
+      ]
+    },
+
+    "sections": {
+      "patterns": [
+        { "name": "keyword.other.section.fcdk", "match": "\\b(templates|deps|env_vars|default_inputs)\\b" },
+        { "name": "keyword.control.stack.fcdk", "match": "\\bstack\\b" }
+      ]
+    },
+
+    "templateKeys": {
+      "patterns": [
+        {
+          "name": "support.constant.template.key.fcdk",
+          "match": "\\b(template_file|gen_path|gen_file_name|var_name|class_name|id_prefix|name_prefix)\\b(?=\\s*=)"
+        }
+      ]
+    },
+
+    "blockNames": {
+      "patterns": [
+        { "name": "entity.name.section.fcdk", "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\b(?=\\s*\\{)" }
+      ]
+    },
+
+    "lhsBeforeEquals": {
+      "patterns": [
+        { "name": "variable.other.assignment.fcdk", "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\b(?=\\s*=)" }
+      ]
+    },
+
+    "rhsRefBeforeBrace": {
+      "patterns": [
+        {
+          "name": "meta.assignment.rhs.ref.fcdk",
+          "match": "(=)\\s*([A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)?)\\s*(?=\\{)",
+          "captures": {
+            "1": { "name": "punctuation.separator.equals.fcdk" },
+            "2": { "name": "variable.other.reference.fcdk" }
+          }
+        }
+      ]
+    },
+
+    "rhsValueSegment": {
+      "patterns": [
+        {
+          "name": "meta.assignment.rhs.fcdk",
+          "begin": "(=)\\s*",
+          "beginCaptures": {
+            "1": { "name": "punctuation.separator.equals.fcdk" }
+          },
+          "contentName": "string.unquoted.value.fcdk",
+          "end": "(?=\\{|#|\\n|=)",
+          "patterns": []
+        }
+      ]
+    },
+
+    "standaloneLhs": {
+      "patterns": [
+        {
+          "name": "variable.other.assignment.fcdk",
+          "match": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(?:(?=\\{)|(?=#$)|$)(?![^=]*=)"
+        }
+      ]
+    },
+
+    "punctuation": {
+      "patterns": [
+        { "name": "punctuation.section.block.begin.fcdk", "match": "\\{" },
+        { "name": "punctuation.section.block.end.fcdk",   "match": "\\}" },
+        { "name": "punctuation.accessor.dot.fcdk",        "match": "\\." },
+        { "name": "punctuation.separator.equals.fcdk",    "match": "=" },
+        { "name": "punctuation.separator.key-value.fcdk", "match": ":" }
+      ]
+    },
+
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.float.fcdk",   "match": "\\b-?(?:\\d+\\.\\d*|\\.\\d+)\\b" },
+        { "name": "constant.numeric.integer.fcdk", "match": "\\b-?\\d+\\b" }
+      ]
+    },
+
+    "literals": {
+      "patterns": [
+        { "name": "constant.language.boolean.fcdk", "match": "\\b(?:true|false)\\b" },
+        { "name": "constant.language.null.fcdk",    "match": "\\bnull\\b" },
+        { "name": "constant.language.placeholder.fcdk", "match": "\\b_\\b" }
+      ]
+    },
+
+    "refsStandalone": {
+      "patterns": [
+        { "name": "variable.other.member.fcdk", "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b(?:\\.[A-Za-z_][A-Za-z0-9_]*)+" },
+        { "name": "string.unquoted.path.fcdk",  "match": "[A-Za-z0-9_\\-\\./\\\\:]+" }
+      ]
+    },
+
+    "identifiers": {
+      "patterns": [
+        { "name": "variable.other.fcdk", "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b" }
+      ]
+    }
+  }
+}
