@@ -9,16 +9,16 @@ from os.path import dirname, join
 @language("fastcdk", "*.fcdk")
 def fastcdk_language():
   metamodel = MetaModel().mm
-  sp = SemanticProcessors()
-  metamodel.register_obj_processors(sp.obj_processors)
+  # sp = SemanticProcessors()
+  # metamodel.register_obj_processors(sp.obj_processors)
 
-  return metamodel_from_file(join(dirname(__file__), "dsl" , "grammar.tx"))
+  return metamodel
 
 
 @language("fastcdk_def", "*.fcdk_def")
 def fastcdk_def_language():
-  # metamodel = MetaModel().mm
+  metamodel = MetaModel().mm
   # sp = SemanticProcessors()
   # metamodel.register_obj_processors(sp.obj_processors)
 
-  return metamodel_from_file(join(dirname(__file__), "dsl" , "grammar.tx"))
+  return metamodel
